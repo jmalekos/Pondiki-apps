@@ -1,0 +1,7 @@
+{
+  "git": {
+    "deploymentEnabled": {
+      "cough-spit-tracker": true
+    }
+  }
+}
