@@ -1,0 +1,9 @@
+{
+  "name": "pondiki-music",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Pondiki's music server — serving tracks to agents on the web",
+  "scripts": {
+    "dev": "vercel dev"
+  }
+}
