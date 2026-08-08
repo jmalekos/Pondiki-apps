@@ -1,0 +1,244 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Pondiki Memory Pyramid</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<style>
+:root {
+  --bg: #0d0f14; --card-bg: #14161f; --border: #1f2233;
+  --text: #e0e0e0; --dim: #6b7280; --accent: #8b5cf6;
+  --green: #22c55e; --yellow: #eab308; --red: #ef4444;
+  --blue: #3b82f6; --cyan: #06b6d4;
+}
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  background: var(--bg); color: var(--text);
+  min-height: 100vh; padding: 24px;
+}
+.header {
+  display: flex; align-items: center; justify-content: space-between;
+  margin-bottom: 32px; flex-wrap: wrap; gap: 12px;
+}
+.header h1 { font-size: 1.8rem; font-weight: 700; }
+.header h1 span { color: var(--accent); }
+.header .meta { color: var(--dim); font-size: 0.85rem; }
+.badge {
+  display: inline-block; padding: 4px 12px; border-radius: 12px;
+  font-size: 0.75rem; font-weight: 600;
+}
+.badge-live { background: rgba(34,197,94,0.15); color: var(--green); }
+.badge-warn { background: rgba(234,179,8,0.15); color: var(--yellow); }
+.badge-dead { background: rgba(239,68,68,0.15); color: var(--red); }
+.grid { display: grid; gap: 20px; }
+.kpi-row { grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); }
+.chart-row { grid-template-columns: repeat(auto-fit, minmax(360px, 1fr)); }
+.full-row { grid-template-columns: 1fr; }
+.card {
+  background: var(--card-bg); border: 1px solid var(--border);
+  border-radius: 12px; padding: 20px;
+}
+.card h2 {
+  font-size: 1rem; font-weight: 600; margin-bottom: 16px;
+  color: var(--dim); text-transform: uppercase; letter-spacing: 0.5px;
+}
+.kpi {
+  background: var(--card-bg); border: 1px solid var(--border);
+  border-radius: 12px; padding: 20px; text-align: center;
+}
+.kpi .value { font-size: 2.4rem; font-weight: 700; line-height: 1; margin: 8px 0; }
+.kpi .label { font-size: 0.8rem; color: var(--dim); text-transform: uppercase; letter-spacing: 0.5px; }
+.kpi .sub { font-size: 0.75rem; color: var(--dim); margin-top: 4px; }
+.kpi.accent .value { color: var(--accent); }
+.kpi.green .value { color: var(--green); }
+.kpi.blue .value { color: var(--blue); }
+.kpi.cyan .value { color: var(--cyan); }
+.alert-list { list-style: none; }
+.alert-list li {
+  padding: 10px 14px; border-radius: 8px; margin-bottom: 8px;
+  font-size: 0.9rem; display: flex; align-items: center; gap: 8px;
+}
+.alert-list li.ok { background: rgba(34,197,94,0.08); border: 1px solid rgba(34,197,94,0.2); }
+.alert-list li.warn { background: rgba(234,179,8,0.08); border: 1px solid rgba(234,179,8,0.2); }
+.alert-list li.err { background: rgba(239,68,68,0.08); border: 1px solid rgba(239,68,68,0.2); }
+.alert-list .icon { font-size: 1.1rem; flex-shrink: 0; }
+.tag-list { display: flex; flex-wrap: wrap; gap: 6px; }
+.tag {
+  font-size: 0.75rem; padding: 3px 10px; border-radius: 8px;
+  background: rgba(139,92,246,0.12); color: var(--accent);
+  border: 1px solid rgba(139,92,246,0.25);
+}
+canvas { max-width: 100%; }
+.footer {
+  text-align: center; color: var(--dim); font-size: 0.75rem;
+  margin-top: 32px; padding-top: 16px; border-top: 1px solid var(--border);
+}
+.footer a { color: var(--accent); text-decoration: none; }
+</style>
+</head>
+<body>
+<div class="header">
+  <div>
+    <h1>🧠 <span>Pondiki</span> Memory Pyramid</h1>
+    <div class="meta" id="timestamp"></div>
+  </div>
+  <div id="status-badge"></div>
+</div>
+<div class="grid kpi-row" id="kpi-row"></div>
+<div class="grid chart-row" style="margin-top:20px">
+  <div class="card"><h2>Layer Inventory</h2><canvas id="chart-inventory"></canvas></div>
+  <div class="card"><h2>Coverage: Tags → Scenarios</h2><canvas id="chart-coverage"></canvas></div>
+</div>
+<div class="grid chart-row" style="margin-top:20px">
+  <div class="card"><h2>Scenario Freshness</h2><canvas id="chart-freshness"></canvas></div>
+  <div class="card"><h2>Search Sanity</h2><canvas id="chart-search"></canvas></div>
+</div>
+<div class="grid full-row" style="margin-top:20px">
+  <div class="card"><h2>Alerts</h2><ul class="alert-list" id="alert-list"></ul></div>
+</div>
+<div class="grid full-row" style="margin-top:20px">
+  <div class="card"><h2>Tag Distribution</h2><div class="tag-list" id="tag-list"></div></div>
+</div>
+<div class="footer">
+  Pondiki Memory Pyramid · Generated <span id="gen-time"></span> ·
+  <a href="https://github.com/jmalekos/Pondiki-apps">GitHub</a>
+</div>
+<script>
+const DATA = {"timestamp": "2026-08-08T10:14:33.669619", "layers": {"atoms": {"count": 5, "by_type": {"infrastructure": 1, "people": 2, "preference": 2}, "by_tag": {"memory-system": 2, "people": 2, "hotels": 2, "lessons": 2, "pricing": 2, "architecture": 1, "decisions": 1, "dietary": 1, "contact": 1}, "oldest": "2026-08-07T23:14:40.409652", "newest": "2026-08-07T23:14:51.135143", "hours_since_last": 11.0}, "scenarios": {"count": 12, "topics": [{"topic": "people", "last_updated": "2026-08-07T23:15:00.791863", "days_since_update": 0.5, "size_kb": 0.26}, {"topic": "hotels", "last_updated": "2026-08-07T23:15:00.498384", "days_since_update": 0.5, "size_kb": 0.43}, {"topic": "memory-system", "last_updated": "2026-08-07T23:15:01.086028", "days_since_update": 0.5, "size_kb": 0.47}, {"topic": "claude-fable-5-prompting", "last_updated": "2026-07-03T22:46:00.746139", "days_since_update": 35.5, "size_kb": 6.66}, {"topic": "derivatives-research", "last_updated": "2026-06-12T15:15:21.188813", "days_since_update": 56.8, "size_kb": 5.25}, {"topic": "market-sentiment", "last_updated": "2026-06-12T15:15:21.212813", "days_since_update": 56.8, "size_kb": 3.84}, {"topic": "equities-research", "last_updated": "2026-06-12T15:15:21.196813", "days_since_update": 56.8, "size_kb": 4.8}, {"topic": "deployment-rules", "last_updated": "2026-05-17T16:29:02.398662", "days_since_update": 82.7, "size_kb": 2.13}, {"topic": "infrastructure-decisions", "last_updated": "2026-03-25T22:34:11.246535", "days_since_update": 135.5, "size_kb": 6.73}, {"topic": "research-methodology", "last_updated": "2026-03-25T22:35:18.970766", "days_since_update": 135.5, "size_kb": 7.04}, {"topic": "prediction-markets", "last_updated": "2026-03-25T22:32:10.878124", "days_since_update": 135.5, "size_kb": 5.26}, {"topic": "skill-architecture", "last_updated": "2026-03-24T23:27:38.837165", "days_since_update": 136.4, "size_kb": 3.68}], "stale_topics": [{"topic": "infrastructure-decisions", "last_updated": "2026-03-25T22:34:11.246535", "days_since_update": 135.5, "size_kb": 6.73}, {"topic": "skill-architecture", "last_updated": "2026-03-24T23:27:38.837165", "days_since_update": 136.4, "size_kb": 3.68}, {"topic": "derivatives-research", "last_updated": "2026-06-12T15:15:21.188813", "days_since_update": 56.8, "size_kb": 5.25}, {"topic": "deployment-rules", "last_updated": "2026-05-17T16:29:02.398662", "days_since_update": 82.7, "size_kb": 2.13}, {"topic": "research-methodology", "last_updated": "2026-03-25T22:35:18.970766", "days_since_update": 135.5, "size_kb": 7.04}, {"topic": "market-sentiment", "last_updated": "2026-06-12T15:15:21.212813", "days_since_update": 56.8, "size_kb": 3.84}, {"topic": "claude-fable-5-prompting", "last_updated": "2026-07-03T22:46:00.746139", "days_since_update": 35.5, "size_kb": 6.66}, {"topic": "prediction-markets", "last_updated": "2026-03-25T22:32:10.878124", "days_since_update": 135.5, "size_kb": 5.26}, {"topic": "equities-research", "last_updated": "2026-06-12T15:15:21.196813", "days_since_update": 56.8, "size_kb": 4.8}]}, "skills": {"count": 1, "names": ["hotel-search"]}, "refs": {"count": 1, "total_kb": 0.17, "nodes": ["margaritaville-tonight"]}}, "coverage": {"tags_without_scenario": ["architecture", "decisions", "dietary", "lessons", "pricing", "contact"], "scenarios_without_atoms": ["infrastructure-decisions", "skill-architecture", "derivatives-research", "deployment-rules", "research-methodology", "market-sentiment", "claude-fable-5-prompting", "prediction-markets", "equities-research"], "coverage_ratio": 33.3}, "quality": {"confidence": {"min": 100, "max": 100, "avg": 100.0, "count_100pct": 5, "count_below_60": 0}, "search_sanity": {"queries_tested": 3, "results_per_query": {"hotel": 27, "memory": 66, "trade": 26}, "any_failures": false}}, "alerts": ["\u26a0\ufe0f Only 5 atoms \u2014 pyramid is thin", "\u26a0\ufe0f 6 tags have atoms but no scenario file: architecture, decisions, dietary, lessons, pricing", "\u26a0\ufe0f Coverage ratio is 33.3% \u2014 most atoms lack scenarios", "\u26a0\ufe0f All atoms have 100% confidence \u2014 may indicate overconfidence bias"]};
+
+Chart.defaults.color = '#6b7280';
+Chart.defaults.borderColor = '#1f2233';
+Chart.defaults.plugins.legend.labels.usePointStyle = true;
+Chart.defaults.plugins.legend.labels.pointStyleWidth = 8;
+
+const t = new Date(DATA.timestamp);
+document.getElementById('timestamp').textContent = t.toLocaleString('en-US', {timeZone:'America/Los_Angeles'}) + ' PDT';
+document.getElementById('gen-time').textContent = t.toISOString();
+
+const alertCount = DATA.alerts.filter(a => !a.startsWith('\u2705')).length;
+const badge = document.getElementById('status-badge');
+if (alertCount === 0) {
+  badge.innerHTML = '<span class="badge badge-live">Healthy</span>';
+} else if (alertCount <= 2) {
+  badge.innerHTML = '<span class="badge badge-warn">Needs Attention</span>';
+} else {
+  badge.innerHTML = '<span class="badge badge-dead">Critical</span>';
+}
+
+const kpis = [
+  {label:'Atoms (L1)', value:DATA.layers.atoms.count, cls:'accent', sub:(DATA.layers.atoms.hours_since_last||0).toFixed(1)+'h ago'},
+  {label:'Scenarios (L2)', value:DATA.layers.scenarios.count, cls:'blue', sub:(DATA.layers.scenarios.stale_topics||[]).length+' stale'},
+  {label:'Skills', value:DATA.layers.skills.count, cls:'green', sub:(DATA.layers.skills.names||[]).join(', ')||'none'},
+  {label:'Refs Offloaded', value:DATA.layers.refs.count, cls:'cyan', sub:(DATA.layers.refs.total_kb||0)+' KB'},
+  {label:'Coverage', value:DATA.coverage.coverage_ratio+'%', cls:DATA.coverage.coverage_ratio >= 70 ? 'green' : DATA.coverage.coverage_ratio >= 40 ? 'blue' : 'accent', sub:'tag\u2192scenario'},
+];
+document.getElementById('kpi-row').innerHTML = kpis.map(k =>
+  '<div class="kpi '+k.cls+'"><div class="label">'+k.label+'</div><div class="value">'+k.value+'</div><div class="sub">'+k.sub+'</div></div>'
+).join('');
+
+document.getElementById('alert-list').innerHTML = DATA.alerts.map(a => {
+  const level = a.startsWith('\u2705') ? 'ok' : (DATA.alerts.length <= 2 ? 'warn' : 'err');
+  const icon = a.startsWith('\u2705') ? '\u2705' : '\u26a0\ufe0f';
+  return '<li class="'+level+'"><span class="icon">'+icon+'</span>'+a+'</li>';
+}).join('');
+
+const tags = DATA.layers.atoms.by_tag || {};
+document.getElementById('tag-list').innerHTML = Object.entries(tags)
+  .sort((a,b) => b[1] - a[1])
+  .map(([tag,count]) => '<span class="tag">'+tag+' ('+count+')</span>')
+  .join('');
+
+new Chart(document.getElementById('chart-inventory'), {
+  type:'bar',
+  data:{
+    labels:['Atoms (L1)','Scenarios (L2)','Skills (L2)','Refs'],
+    datasets:[{
+      label:'Count',
+      data:[DATA.layers.atoms.count, DATA.layers.scenarios.count, DATA.layers.skills.count, DATA.layers.refs.count],
+      backgroundColor:['rgba(139,92,246,0.6)','rgba(59,130,246,0.6)','rgba(34,197,94,0.6)','rgba(6,182,212,0.6)'],
+      borderColor:['rgba(139,92,246,1)','rgba(59,130,246,1)','rgba(34,197,94,1)','rgba(6,182,212,1)'],
+      borderWidth:1, borderRadius:6
+    }]
+  },
+  options:{
+    responsive:true,
+    plugins:{legend:{display:false}},
+    scales:{
+      y:{beginAtZero:true, grid:{color:'rgba(255,255,255,0.05)'}, ticks:{stepSize:1}},
+      x:{grid:{display:false}}
+    }
+  }
+});
+
+new Chart(document.getElementById('chart-coverage'), {
+  type:'doughnut',
+  data:{
+    labels:['Covered','Uncovered','Orphan scenarios'],
+    datasets:[{
+      data:[
+        Math.round(DATA.coverage.coverage_ratio),
+        Math.round(100 - DATA.coverage.coverage_ratio - (DATA.coverage.scenarios_without_atoms||[]).length / Math.max((DATA.layers.scenarios.count + (DATA.coverage.tags_without_scenario||[]).length), 1) * 100),
+        (DATA.coverage.scenarios_without_atoms||[]).length
+      ],
+      backgroundColor:['rgba(34,197,94,0.7)','rgba(234,179,8,0.7)','rgba(59,130,246,0.7)'],
+      borderColor:['rgba(34,197,94,1)','rgba(234,179,8,1)','rgba(59,130,246,1)'],
+      borderWidth:1
+    }]
+  },
+  options:{
+    responsive:true,
+    plugins:{legend:{position:'bottom', labels:{padding:16, color:'#e0e0e0'}}}
+  }
+});
+
+const fresh = [...(DATA.layers.scenarios.topics||[])].sort((a,b) => b.days_since_update - a.days_since_update).slice(0,10);
+new Chart(document.getElementById('chart-freshness'), {
+  type:'bar',
+  data:{
+    labels:fresh.map(t => t.topic),
+    datasets:[{
+      label:'Days since update',
+      data:fresh.map(t => t.days_since_update),
+      backgroundColor:fresh.map(t => t.days_since_update > 90 ? 'rgba(239,68,68,0.6)' : t.days_since_update > 30 ? 'rgba(234,179,8,0.6)' : 'rgba(34,197,94,0.6)'),
+      borderColor:fresh.map(t => t.days_since_update > 90 ? 'rgba(239,68,68,1)' : t.days_since_update > 30 ? 'rgba(234,179,8,1)' : 'rgba(34,197,94,1)'),
+      borderWidth:1, borderRadius:6
+    }]
+  },
+  options:{
+    indexAxis:'y',
+    responsive:true,
+    plugins:{legend:{display:false}},
+    scales:{
+      x:{beginAtZero:true, grid:{color:'rgba(255,255,255,0.05)'}, title:{display:true, text:'Days since last update', color:'#6b7280'}},
+      y:{grid:{display:false}, ticks:{color:'#e0e0e0'}}
+    }
+  }
+});
+
+const searchData = (DATA.quality.search_sanity||{}).results_per_query||{};
+new Chart(document.getElementById('chart-search'), {
+  type:'bar',
+  data:{
+    labels:Object.keys(searchData),
+    datasets:[{
+      label:'Hybrid search hits',
+      data:Object.values(searchData),
+      backgroundColor:['rgba(139,92,246,0.6)','rgba(59,130,246,0.6)','rgba(6,182,212,0.6)'],
+      borderColor:['rgba(139,92,246,1)','rgba(59,130,246,1)','rgba(6,182,212,1)'],
+      borderWidth:1, borderRadius:6
+    }]
+  },
+  options:{
+    responsive:true,
+    plugins:{legend:{display:false}},
+    scales:{
+      y:{beginAtZero:true, grid:{color:'rgba(255,255,255,0.05)'}},
+      x:{grid:{display:false}}
+    }
+  }
+});
+</script>
+</body>
+</html>
