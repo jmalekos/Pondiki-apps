@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>BTC//TERMINAL · Project Satoshi</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<style>
+:root {
+  --bg: #0d0f14; --card-bg: #14161f; --border: #1f2233;
+  --text: #e0e0e0; --dim: #6b7280; --accent: #f7931a;
+  --green: #22c55e; --red: #ef4444; --blue: #3b82f6; --cyan: #06b6d4;
+}
+* { margin:0; padding:0; box-sizing:border-box; }
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  background: var(--bg); color: var(--text); min-height: 100vh; padding: 24px;
+}
+.header {
+  display: flex; align-items: center; justify-content: space-between;
+  margin-bottom: 28px; flex-wrap: wrap; gap: 12px;
+}
+.header h1 { font-size: 1.6rem; font-weight: 700; }
+.header h1 span { color: var(--accent); }
+.header .price { font-size: 2rem; font-weight: 700; color: var(--accent); }
+.header .meta { color: var(--dim); font-size: 0.8rem; }
+.price-row { display: flex; align-items: baseline; gap: 16px; flex-wrap: wrap; }
+.grid { display: grid; gap: 20px; }
+.kpi-row { grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); }
+.chart-row { grid-template-columns: repeat(auto-fit, minmax(380px, 1fr)); }
+.full-row { grid-template-columns: 1fr; }
+.card {
+  background: var(--card-bg); border: 1px solid var(--border);
+  border-radius: 12px; padding: 20px;
+}
+.card h2 {
+  font-size: 0.95rem; font-weight: 600; margin-bottom: 14px;
+  color: var(--dim); text-transform: uppercase; letter-spacing: 0.5px;
+}
+.kpi {
+  background: var(--card-bg); border: 1px solid var(--border);
+  border-radius: 12px; padding: 16px; text-align: center;
+}
+.kpi .value { font-size: 1.6rem; font-weight: 700; line-height: 1.1; margin: 6px 0; }
+.kpi .label { font-size: 0.7rem; color: var(--dim); text-transform: uppercase; letter-spacing: 0.5px; }
+.kpi .sub { font-size: 0.7rem; color: var(--dim); margin-top: 2px; }
+.bull { color: var(--green); }
+.bear { color: var(--red); }
+.neutral { color: var(--cyan); }
+.report-box {
+  background: rgba(0,0,0,0.3); border: 1px solid var(--border);
+  border-radius: 8px; padding: 16px; font-family: 'Courier New', monospace;
+  font-size: 0.82rem; line-height: 1.5; max-height: 420px; overflow-y: auto;
+  white-space: pre-wrap; color: var(--text);
+}
+.regime-badge {
+  display: inline-block; padding: 4px 12px; border-radius: 8px;
+  font-size: 0.85rem; font-weight: 600; text-transform: uppercase;
+}
+.regime-RANGE_BOUND { background: rgba(59,130,246,0.15); color: var(--blue); }
+.regime-BULL_TREND { background: rgba(34,197,94,0.15); color: var(--green); }
+.regime-EUPHORIA { background: rgba(234,179,8,0.15); color: #eab308; }
+.regime-CAPITULATION { background: rgba(239,68,68,0.2); color: var(--red); }
+.regime-ORDERLY_CORRECTION { background: rgba(249,115,22,0.15); color: #f97316; }
+.regime-BEAR { background: rgba(239,68,68,0.15); color: var(--red); }
+canvas { max-width: 100%; }
+.footer {
+  text-align: center; color: var(--dim); font-size: 0.7rem;
+  margin-top: 32px; padding-top: 16px; border-top: 1px solid var(--border);
+}
+.footer a { color: var(--accent); text-decoration: none; }
+.portal-link {
+  display: inline-block; margin-bottom: 20px; font-size: 0.8rem;
+  color: var(--dim); text-decoration: none;
+}
+.portal-link:hover { color: var(--accent); }
+</style>
+</head>
+<body>
+<a href="/Pondiki-apps/" class="portal-link">← Pondiki Dashboards</a>
+
+<div class="header">
+  <div>
+    <h1>₿ <span>BTC</span>//TERMINAL</h1>
+    <div class="meta">Project Satoshi · Snapshot: 2026-08-08T16:57:43.493084</div>
+  </div>
+  <div class="price-row">
+    <span class="price">$64,880</span>
+    <span class="regime-badge regime-RANGE_BOUND">RANGE BOUND</span>
+  </div>
+</div>
+
+<div class="grid kpi-row">
+  <div class="kpi"><div class="label">Funding Streak</div><div class="value bear">-45d</div><div class="sub">negative</div></div>
+  <div class="kpi"><div class="label">OI Put/Call Ratio</div><div class="value bear">3.82</div><div class="sub">Very bearish/hedged</div></div>
+  <div class="kpi"><div class="label">Fear &amp; Greed</div><div class="value bear">15/100</div><div class="sub">Extreme Fear</div></div>
+  <div class="kpi"><div class="label">VIX</div><div class="value neutral">15.15</div><div class="sub">Calm</div></div>
+  <div class="kpi"><div class="label">Fed Funds</div><div class="value" style="color:var(--cyan)">3.63%</div><div class="sub">10Y: 4.69%</div></div>
+  <div class="kpi"><div class="label">Max OI Put Wall</div><div class="value" style="color:var(--red)">$60,000.0</div><div class="sub">OI: 4,681</div></div>
+</div>
+
+<div class="grid chart-row" style="margin-top:20px">
+  <div class="card">
+    <h2>BTC Price — 30 Day History</h2>
+    <canvas id="chart-price"></canvas>
+  </div>
+  <div class="card">
+    <h2>Options Term Structure</h2>
+    <canvas id="chart-terms"></canvas>
+  </div>
+</div>
+
+<div class="grid full-row" style="margin-top:20px">
+  <div class="card">
+    <h2>Regime Analysis</h2>
+    <div class="report-box" id="regime-report"></div>
+  </div>
+</div>
+
+<div class="grid full-row" style="margin-top:20px">
+  <div class="card">
+    <h2>Full Sentiment Report</h2>
+    <div class="report-box">============================================================
+BTC MARKET SENTIMENT REPORT
+Time: 2026-08-08 16:57 
+============================================================
+
+💰 PRICE: $64,880.19
+
+🎯 REGIME: RANGE_BOUND
+   Confidence: 65.0%
+   Position scalar: 0.80
+   ── Regime check log ──
+   ⛔ EUPHORIA: ATR &gt;6%, fear&amp;greed &gt;80, funding &gt;15% annualized
+   ⛔ CAPITULATION: Drawdown &gt;20% needed
+   ⛔ ORDERLY_CORRECTION: Price above 20D EMA; Drawdown 3.0% not in 10-20% range
+   ⛔ BULL_TREND: Below 200D SMA ($70,370); 50D slope -0.12% not positive
+   ✅ RANGE_BOUND: Active — all range conditions met
+
+📊 OPTIONS SENTIMENT:
+   OI PCR: 3.8191463650425366 (Very bearish/hedged)
+   Skew: 0.0
+   Market sentiment: Bearish (OI PCR 3.82)
+   Max OI Put: $60,000 (OI: 4,681)
+   Max OI Call: $62,000 (OI: 902)
+   Term structure: Contango
+   Front IV: 33.49666666666667%, Back IV: 35.75333333333334%
+
+🌍 MACRO BACKDROP:
+   Fed Funds: 3.63%
+   10Y Treasury: 4.69%
+   VIX: 15.15 (Calm)
+   Yield curve: 10Y‑2Y spread: 0.46% (normal)
+   Curve signal: Normal
+
+😨 FEAR &amp; GREED INDEX: 15/100
+   Extreme Fear - potential buying opportunity
+
+📉 FUNDING STREAK: -45 days (negative)
+   Current funding rate: 0.0000%/8h
+   Approaching 2022 FTX-era bottom (47 days)
+
+🧠 SYNTHESIS:
+   ⚖️ Range-bound market
+   → Hold, sell covered calls at range highs, CSPs at lows
+   ⚠️ High PCR suggests hedging/caution despite regime
+
+============================================================</div>
+  </div>
+</div>
+
+<div class="footer">
+  BTC//TERMINAL · Project Satoshi · Local: 10.0.0.113:8055 ·
+  <a href="/Pondiki-apps/">Portal</a>
+</div>
+
+<script>
+Chart.defaults.color = '#6b7280';
+Chart.defaults.borderColor = '#1f2233';
+
+new Chart(document.getElementById('chart-price'), {
+  type: 'line',
+  data: {
+    labels: ["2026-07-09", "2026-07-10", "2026-07-11", "2026-07-12", "2026-07-13", "2026-07-14", "2026-07-15", "2026-07-16", "2026-07-17", "2026-07-18", "2026-07-19", "2026-07-20", "2026-07-21", "2026-07-22", "2026-07-23", "2026-07-24", "2026-07-25", "2026-07-26", "2026-07-27", "2026-07-28", "2026-07-29", "2026-07-30", "2026-07-31", "2026-08-01", "2026-08-02", "2026-08-03", "2026-08-04", "2026-08-05", "2026-08-06", "2026-08-07"],
+    datasets: [{
+      label: 'BTC/USD',
+      data: [63193.1484375, 64127.140625, 63802.02734375, 63758.21875, 62239.12109375, 64956.11328125, 64712.375, 63789.28125, 63899.4609375, 64796.6015625, 64690.8046875, 65230.02734375, 66505.125, 66100.796875, 65044.8125, 64098.49609375, 64311.8125, 65340.30078125, 63724.8984375, 63871.36328125, 63908.16796875, 64725.30859375, 62813.74609375, 62763.3203125, 63482.0, 63460.8984375, 64055.953125, 64597.5, 64262.11328125, 64880.19140625],
+      borderColor: '#f7931a',
+      backgroundColor: 'rgba(247,147,26,0.08)',
+      fill: true,
+      tension: 0.3,
+      pointRadius: 0,
+      borderWidth: 2
+    }]
+  },
+  options: {
+    responsive: true,
+    plugins: { legend: { display: false } },
+    scales: {
+      y: { grid: { color: 'rgba(255,255,255,0.05)' }, ticks: { callback: function(v) { return '$' + v.toLocaleString(); } } },
+      x: { grid: { display: false } }
+    }
+  }
+});
+
+new Chart(document.getElementById('chart-terms'), {
+  type: 'bar',
+  data: {
+    labels: ['Front Month IV', 'Back Month IV'],
+    datasets: [{
+      label: 'Implied Volatility %',
+      data: [33.49666666666667, 35.75333333333334],
+      backgroundColor: ['rgba(247,147,26,0.5)', 'rgba(59,130,246,0.5)'],
+      borderColor: ['rgba(247,147,26,1)', 'rgba(59,130,246,1)'],
+      borderWidth: 1, borderRadius: 6
+    }]
+  },
+  options: {
+    responsive: true,
+    plugins: { legend: { display: false } },
+    scales: {
+      y: { beginAtZero: false, grid: { color: 'rgba(255,255,255,0.05)' }, title: { display: true, text: 'IV %', color: '#6b7280' } },
+      x: { grid: { display: false } }
+    }
+  }
+});
+
+var checks = [{"passed": false, "reason": "ATR >6%, fear&greed >80, funding >15% annualized", "regime": "EUPHORIA"}, {"passed": false, "reason": "Drawdown >20% needed", "regime": "CAPITULATION"}, {"passed": false, "reason": "Price above 20D EMA; Drawdown 3.0% not in 10-20% range", "regime": "ORDERLY_CORRECTION"}, {"passed": false, "reason": "Below 200D SMA ($70,370); 50D slope -0.12% not positive", "regime": "BULL_TREND"}, {"passed": true, "reason": "Active \u2014 all range conditions met", "regime": "RANGE_BOUND"}];
+var regimeHtml = '';
+for (var i = 0; i < checks.length; i++) {
+  var c = checks[i];
+  regimeHtml += (c.passed ? '✅' : '⛔') + ' <b>' + c.regime + '</b>: ' + c.reason + '\n';
+}
+document.getElementById('regime-report').innerHTML = regimeHtml;
+</script>
+</body>
+</html>
