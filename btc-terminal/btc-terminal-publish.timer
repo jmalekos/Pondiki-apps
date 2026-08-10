@@ -1,0 +1,11 @@
+[Unit]
+Description=BTC//TERMINAL Snapshot Publisher Timer
+Requires=btc-terminal-publish.service
+
+[Timer]
+OnBootSec=2min
+OnUnitActiveSec=5min
+RandomizedDelaySec=30
+
+[Install]
+WantedBy=timers.target

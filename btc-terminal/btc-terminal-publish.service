@@ -1,0 +1,16 @@
+[Unit]
+Description=BTC//TERMINAL Snapshot Publisher
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=oneshot
+WorkingDirectory=/home/pi/Pondiki-apps/btc-terminal
+ExecStart=/bin/bash /home/pi/Pondiki-apps/btc-terminal/publish.sh
+User=pi
+StandardOutput=journal
+StandardError=journal
+
+# Retry on transient failures
+Restart=on-failure
+RestartSec=30

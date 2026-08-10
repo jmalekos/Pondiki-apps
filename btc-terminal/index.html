@@ -10,12 +10,23 @@
   --bg: #0d0f14; --card-bg: #14161f; --border: #1f2233;
   --text: #e0e0e0; --dim: #6b7280; --accent: #f7931a;
   --green: #22c55e; --red: #ef4444; --blue: #3b82f6; --cyan: #06b6d4;
+  --warn: #f59e0b; --stale: #9ca3af;
 }
 * { margin:0; padding:0; box-sizing:border-box; }
 body {
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
   background: var(--bg); color: var(--text); min-height: 100vh; padding: 24px;
 }
+
+/* Staleness banner */
+.stale-banner {
+  background: rgba(245,158,11,0.15); border: 1px solid var(--warn);
+  color: var(--warn); padding: 10px 16px; border-radius: 8px;
+  margin-bottom: 16px; font-size: 0.85rem; display: none; align-items: center; gap: 8px;
+}
+.stale-banner.visible { display: flex; }
+.stale-banner.critical { background: rgba(239,68,68,0.15); border-color: var(--red); color: var(--red); }
+
 .header {
   display: flex; align-items: center; justify-content: space-between;
   margin-bottom: 28px; flex-wrap: wrap; gap: 12px;
@@ -39,11 +50,31 @@ body {
 }
 .kpi {
   background: var(--card-bg); border: 1px solid var(--border);
-  border-radius: 12px; padding: 16px; text-align: center;
+  border-radius: 12px; padding: 16px; text-align: center; position: relative;
 }
 .kpi .value { font-size: 1.6rem; font-weight: 700; line-height: 1.1; margin: 6px 0; }
 .kpi .label { font-size: 0.7rem; color: var(--dim); text-transform: uppercase; letter-spacing: 0.5px; }
 .kpi .sub { font-size: 0.7rem; color: var(--dim); margin-top: 2px; }
+.kpi .source-line { font-size: 0.6rem; color: var(--dim); margin-top: 4px; opacity: 0.6; }
+
+/* Staleness degradation */
+.kpi.stale { opacity: 0.5; }
+.kpi.stale .value { color: var(--stale) !important; }
+.kpi .stale-badge {
+  display: none; position: absolute; top: 6px; right: 8px;
+  font-size: 0.6rem; background: rgba(156,163,175,0.2); color: var(--stale);
+  padding: 2px 6px; border-radius: 4px;
+}
+.kpi.stale .stale-badge { display: inline-block; }
+.kpi .error-badge {
+  display: none; position: absolute; top: 6px; right: 8px;
+  font-size: 0.6rem; background: rgba(239,68,68,0.2); color: var(--red);
+  padding: 2px 6px; border-radius: 4px;
+}
+.kpi.error { opacity: 0.4; }
+.kpi.error .value { color: var(--red) !important; }
+.kpi.error .error-badge { display: inline-block; }
+
 .bull { color: var(--green); }
 .bear { color: var(--red); }
 .neutral { color: var(--cyan); }
@@ -74,29 +105,29 @@ canvas { max-width: 100%; }
   color: var(--dim); text-decoration: none;
 }
 .portal-link:hover { color: var(--accent); }
+.loading { text-align: center; padding: 40px; color: var(--dim); font-size: 1rem; }
 </style>
 </head>
 <body>
 <a href="/Pondiki-apps/" class="portal-link">← Pondiki Dashboards</a>
 
+<div class="stale-banner" id="stale-banner">
+  <span>⚠️</span><span id="stale-banner-text">Loading...</span>
+</div>
+
 <div class="header">
   <div>
     <h1>₿ <span>BTC</span>//TERMINAL</h1>
-    <div class="meta">Project Satoshi · Snapshot: 2026-08-08T16:57:43.493084</div>
+    <div class="meta" id="meta-line">Project Satoshi · Loading snapshot...</div>
   </div>
   <div class="price-row">
-    <span class="price">$64,880</span>
-    <span class="regime-badge regime-RANGE_BOUND">RANGE BOUND</span>
+    <span class="price" id="header-price">---</span>
+    <span class="regime-badge regime-RANGE_BOUND" id="header-regime">---</span>
   </div>
 </div>
 
-<div class="grid kpi-row">
-  <div class="kpi"><div class="label">Funding Streak</div><div class="value bear">-45d</div><div class="sub">negative</div></div>
-  <div class="kpi"><div class="label">OI Put/Call Ratio</div><div class="value bear">3.82</div><div class="sub">Very bearish/hedged</div></div>
-  <div class="kpi"><div class="label">Fear &amp; Greed</div><div class="value bear">15/100</div><div class="sub">Extreme Fear</div></div>
-  <div class="kpi"><div class="label">VIX</div><div class="value neutral">15.15</div><div class="sub">Calm</div></div>
-  <div class="kpi"><div class="label">Fed Funds</div><div class="value" style="color:var(--cyan)">3.63%</div><div class="sub">10Y: 4.69%</div></div>
-  <div class="kpi"><div class="label">Max OI Put Wall</div><div class="value" style="color:var(--red)">$60,000.0</div><div class="sub">OI: 4,681</div></div>
+<div class="grid kpi-row" id="kpi-row">
+  <div class="loading">Loading snapshot.json...</div>
 </div>
 
 <div class="grid chart-row" style="margin-top:20px">
@@ -120,57 +151,12 @@ canvas { max-width: 100%; }
 <div class="grid full-row" style="margin-top:20px">
   <div class="card">
     <h2>Full Sentiment Report</h2>
-    <div class="report-box">============================================================
-BTC MARKET SENTIMENT REPORT
-Time: 2026-08-08 16:57 
-============================================================
-
-💰 PRICE: $64,880.19
-
-🎯 REGIME: RANGE_BOUND
-   Confidence: 65.0%
-   Position scalar: 0.80
-   ── Regime check log ──
-   ⛔ EUPHORIA: ATR &gt;6%, fear&amp;greed &gt;80, funding &gt;15% annualized
-   ⛔ CAPITULATION: Drawdown &gt;20% needed
-   ⛔ ORDERLY_CORRECTION: Price above 20D EMA; Drawdown 3.0% not in 10-20% range
-   ⛔ BULL_TREND: Below 200D SMA ($70,370); 50D slope -0.12% not positive
-   ✅ RANGE_BOUND: Active — all range conditions met
-
-📊 OPTIONS SENTIMENT:
-   OI PCR: 3.8191463650425366 (Very bearish/hedged)
-   Skew: 0.0
-   Market sentiment: Bearish (OI PCR 3.82)
-   Max OI Put: $60,000 (OI: 4,681)
-   Max OI Call: $62,000 (OI: 902)
-   Term structure: Contango
-   Front IV: 33.49666666666667%, Back IV: 35.75333333333334%
-
-🌍 MACRO BACKDROP:
-   Fed Funds: 3.63%
-   10Y Treasury: 4.69%
-   VIX: 15.15 (Calm)
-   Yield curve: 10Y‑2Y spread: 0.46% (normal)
-   Curve signal: Normal
-
-😨 FEAR &amp; GREED INDEX: 15/100
-   Extreme Fear - potential buying opportunity
-
-📉 FUNDING STREAK: -45 days (negative)
-   Current funding rate: 0.0000%/8h
-   Approaching 2022 FTX-era bottom (47 days)
-
-🧠 SYNTHESIS:
-   ⚖️ Range-bound market
-   → Hold, sell covered calls at range highs, CSPs at lows
-   ⚠️ High PCR suggests hedging/caution despite regime
-
-============================================================</div>
+    <div class="report-box" id="sentiment-report">Loading...</div>
   </div>
 </div>
 
 <div class="footer">
-  BTC//TERMINAL · Project Satoshi · Local: 10.0.0.113:8055 ·
+  BTC//TERMINAL · Project Satoshi · <span id="snapshot-source">---</span> ·
   <a href="/Pondiki-apps/">Portal</a>
 </div>
 
@@ -178,60 +164,308 @@ Time: 2026-08-08 16:57
 Chart.defaults.color = '#6b7280';
 Chart.defaults.borderColor = '#1f2233';
 
-new Chart(document.getElementById('chart-price'), {
-  type: 'line',
-  data: {
-    labels: ["2026-07-09", "2026-07-10", "2026-07-11", "2026-07-12", "2026-07-13", "2026-07-14", "2026-07-15", "2026-07-16", "2026-07-17", "2026-07-18", "2026-07-19", "2026-07-20", "2026-07-21", "2026-07-22", "2026-07-23", "2026-07-24", "2026-07-25", "2026-07-26", "2026-07-27", "2026-07-28", "2026-07-29", "2026-07-30", "2026-07-31", "2026-08-01", "2026-08-02", "2026-08-03", "2026-08-04", "2026-08-05", "2026-08-06", "2026-08-07"],
-    datasets: [{
-      label: 'BTC/USD',
-      data: [63193.1484375, 64127.140625, 63802.02734375, 63758.21875, 62239.12109375, 64956.11328125, 64712.375, 63789.28125, 63899.4609375, 64796.6015625, 64690.8046875, 65230.02734375, 66505.125, 66100.796875, 65044.8125, 64098.49609375, 64311.8125, 65340.30078125, 63724.8984375, 63871.36328125, 63908.16796875, 64725.30859375, 62813.74609375, 62763.3203125, 63482.0, 63460.8984375, 64055.953125, 64597.5, 64262.11328125, 64880.19140625],
-      borderColor: '#f7931a',
-      backgroundColor: 'rgba(247,147,26,0.08)',
-      fill: true,
-      tension: 0.3,
-      pointRadius: 0,
-      borderWidth: 2
-    }]
-  },
-  options: {
-    responsive: true,
-    plugins: { legend: { display: false } },
-    scales: {
-      y: { grid: { color: 'rgba(255,255,255,0.05)' }, ticks: { callback: function(v) { return '$' + v.toLocaleString(); } } },
-      x: { grid: { display: false } }
-    }
-  }
-});
+const SNAPSHOT_URL = "snapshot.json";
+const MAX_SNAPSHOT_AGE_MIN = 15;
 
-new Chart(document.getElementById('chart-terms'), {
-  type: 'bar',
-  data: {
-    labels: ['Front Month IV', 'Back Month IV'],
-    datasets: [{
-      label: 'Implied Volatility %',
-      data: [33.49666666666667, 35.75333333333334],
-      backgroundColor: ['rgba(247,147,26,0.5)', 'rgba(59,130,246,0.5)'],
-      borderColor: ['rgba(247,147,26,1)', 'rgba(59,130,246,1)'],
-      borderWidth: 1, borderRadius: 6
-    }]
-  },
-  options: {
-    responsive: true,
-    plugins: { legend: { display: false } },
-    scales: {
-      y: { beginAtZero: false, grid: { color: 'rgba(255,255,255,0.05)' }, title: { display: true, text: 'IV %', color: '#6b7280' } },
-      x: { grid: { display: false } }
-    }
-  }
-});
+// ---- Field rendering ----
+function fieldStatus(f) { return f && f.status ? f.status : "missing"; }
+function fieldValue(f) { return f && f.value != null ? f.value : null; }
+function fieldSource(f) { return f ? (f.source || "") : ""; }
 
-var checks = [{"passed": false, "reason": "ATR >6%, fear&greed >80, funding >15% annualized", "regime": "EUPHORIA"}, {"passed": false, "reason": "Drawdown >20% needed", "regime": "CAPITULATION"}, {"passed": false, "reason": "Price above 20D EMA; Drawdown 3.0% not in 10-20% range", "regime": "ORDERLY_CORRECTION"}, {"passed": false, "reason": "Below 200D SMA ($70,370); 50D slope -0.12% not positive", "regime": "BULL_TREND"}, {"passed": true, "reason": "Active \u2014 all range conditions met", "regime": "RANGE_BOUND"}];
-var regimeHtml = '';
-for (var i = 0; i < checks.length; i++) {
-  var c = checks[i];
-  regimeHtml += (c.passed ? '✅' : '⛔') + ' <b>' + c.regime + '</b>: ' + c.reason + '\n';
+function fieldAgeMin(f) {
+  if (!f || !f.fetched_at) return null;
+  const fetched = Date.parse(f.fetched_at);
+  if (isNaN(fetched)) return null;
+  return Math.round((Date.now() - fetched) / 60000);
 }
-document.getElementById('regime-report').innerHTML = regimeHtml;
+
+function fmtPct(v) { return v != null ? v.toFixed(2) + "%" : "---"; }
+function fmtMoney(v) { return v != null ? "$" + Number(v).toLocaleString(undefined, {minimumFractionDigits:0, maximumFractionDigits:0}) : "---"; }
+function fmtNum(v, dec) { return v != null ? Number(v).toFixed(dec||0) : "---"; }
+
+function kpiClass(status) {
+  if (status === "stale") return "stale";
+  if (status === "error" || status === "missing") return "error";
+  return "";
+}
+
+function kpiBadge(status) {
+  if (status === "stale") return '<span class="stale-badge">STALE</span>';
+  if (status === "error") return '<span class="error-badge">ERR</span>';
+  if (status === "missing") return '<span class="error-badge">N/A</span>';
+  return '';
+}
+
+// ---- Load & Render ----
+async function load() {
+  let snap;
+  try {
+    const resp = await fetch(SNAPSHOT_URL, {cache: "no-store"});
+    if (!resp.ok) throw new Error("HTTP " + resp.status);
+    snap = await resp.json();
+  } catch(e) {
+    document.getElementById("kpi-row").innerHTML = '<div class="card" style="grid-column:1/-1;text-align:center;color:var(--red)">✗ Failed to load snapshot.json: ' + e.message + '</div>';
+    document.getElementById("stale-banner").className = "stale-banner critical visible";
+    document.getElementById("stale-banner-text").textContent = "Cannot load snapshot.json — pipeline may be down";
+    return;
+  }
+
+  // Schema version check
+  const isV2 = snap._schema_version >= 2;
+  const fields = isV2 ? snap.fields : null;
+
+  // §5: Snapshot-level age guard
+  const genAt = snap.generated_at;
+  const genDate = Date.parse(genAt);
+  const ageMin = isNaN(genDate) ? null : Math.round((Date.now() - genDate) / 60000);
+  
+  const banner = document.getElementById("stale-banner");
+  const bannerText = document.getElementById("stale-banner-text");
+  if (ageMin === null) {
+    banner.className = "stale-banner critical visible";
+    bannerText.textContent = "⚠ Cannot parse snapshot timestamp — data integrity suspect";
+  } else if (ageMin > MAX_SNAPSHOT_AGE_MIN) {
+    banner.className = "stale-banner visible" + (ageMin > 60 ? " critical" : "");
+    bannerText.textContent = "⚠ STALE — snapshot " + ageMin + " min old" + (ageMin > 60 ? " (over 1 hour!)" : "");
+  } else if (ageMin > 5) {
+    banner.className = "stale-banner visible";
+    bannerText.textContent = "⚠ Snapshot " + ageMin + " min old — may be slightly behind";
+  }
+
+  // Meta line
+  document.getElementById("meta-line").textContent = 
+    "Project Satoshi · Snapshot: " + (genAt || "unknown") + 
+    (ageMin != null ? " · Age: " + ageMin + " min" : "");
+
+  // Header price
+  const priceField = isV2 ? fields.btc_price : {value: snap.btc_price, status: "ok"};
+  document.getElementById("header-price").textContent = fmtMoney(fieldValue(priceField));
+  
+  const regime = snap.regime || {};
+  const regimeName = regime.final_regime || regime.regime || "UNKNOWN";
+  const regimeBadge = document.getElementById("header-regime");
+  regimeBadge.textContent = regimeName.replace(/_/g, " ");
+  regimeBadge.className = "regime-badge regime-" + regimeName;
+
+  // ---- KPI Row ----
+  const kpiContainer = document.getElementById("kpi-row");
+  
+  let kpiHTML = "";
+  
+  if (isV2) {
+    // v2: render from fields map with provenance
+    const kpis = [
+      {key: "funding_streak_days", label: "Funding Streak", fmt: v => {
+        if (v == null) return "---";
+        const abs = Math.abs(v);
+        return (v < 0 ? "-" : v > 0 ? "+" : "") + abs + "d";
+      }, colorFn: v => v != null && v < 0 ? "bear" : "bull"},
+      {key: "fear_greed", label: "Fear & Greed", fmt: v => v != null ? v + "/100" : "---",
+       colorFn: v => v != null && v <= 25 ? "bear" : v >= 75 ? "bull" : "neutral"},
+      {key: "vix", label: "VIX", fmt: v => fmtNum(v, 2), colorFn: v => v > 25 ? "bear" : "neutral"},
+      {key: "fed_funds", label: "Fed Funds", fmt: v => fmtPct(v), colorFn: () => ""},
+      {key: "ust_10y", label: "10Y Treasury", fmt: v => fmtPct(v), colorFn: () => ""},
+    ];
+    
+    for (const kpi of kpis) {
+      const f = fields[kpi.key];
+      if (!f) continue;
+      const status = fieldStatus(f);
+      const val = fieldValue(f);
+      const cls = kpiClass(status);
+      const colorClass = status === "ok" ? (kpi.colorFn ? kpi.colorFn(val) : "") : "";
+      const ageM = fieldAgeMin(f);
+      
+      // Sub-line: source + age
+      let subHTML = "";
+      if (status === "ok" && ageM !== null) {
+        subHTML = '<div class="source-line">' + f.source + (ageM > 0 ? ' · ' + ageM + 'm ago' : ' · just now') + '</div>';
+      } else if (status !== "ok") {
+        subHTML = '<div class="source-line">' + f.source + '</div>';
+      }
+      
+      // Classification for F&G
+      let subText = "";
+      if (kpi.key === "fear_greed" && status === "ok" && val != null) {
+        if (val <= 24) subText = "Extreme Fear";
+        else if (val <= 49) subText = "Fear";
+        else if (val <= 54) subText = "Neutral";
+        else if (val <= 74) subText = "Greed";
+        else subText = "Extreme Greed";
+      }
+      
+      kpiHTML += '<div class="kpi ' + cls + '">' +
+        kpiBadge(status) +
+        '<div class="label">' + kpi.label + '</div>' +
+        '<div class="value ' + colorClass + '" style="' + (status !== "ok" ? "color:var(--stale)" : "") + '">' + kpi.fmt(val) + '</div>' +
+        (subText ? '<div class="sub">' + subText + '</div>' : '') +
+        subHTML +
+        '</div>';
+    }
+    
+    // PCR from options
+    const opts = snap.options || {};
+    const pcr = opts.put_call_ratio;
+    const pcrInterp = opts.pcr_interpretation || "";
+    kpiHTML += '<div class="kpi">' +
+      '<div class="label">OI Put/Call Ratio</div>' +
+      '<div class="value ' + (pcr != null && pcr > 2.5 ? 'bear' : pcr != null && pcr < 0.8 ? 'bull' : 'neutral') + '">' + (pcr != null ? pcr.toFixed(2) : "---") + '</div>' +
+      '<div class="sub">' + pcrInterp + '</div>' +
+      '<div class="source-line">deribit options</div>' +
+      '</div>';
+    
+    // Max OI from options
+    const maxOI = opts.max_oi;
+    if (maxOI && maxOI.put) {
+      kpiHTML += '<div class="kpi">' +
+        '<div class="label">Max OI Put Wall</div>' +
+        '<div class="value" style="color:var(--red)">' + fmtMoney(maxOI.put.strike) + '</div>' +
+        '<div class="sub">OI: ' + (maxOI.put.open_interest || 0).toLocaleString() + '</div>' +
+        '<div class="source-line">deribit options</div>' +
+        '</div>';
+    } else {
+      kpiHTML += '<div class="kpi">' +
+        '<div class="label">Max OI Put Wall</div>' +
+        '<div class="value" style="color:var(--stale)">---</div>' +
+        '</div>';
+    }
+    
+  } else {
+    // v1 fallback (bare scalars in snapshot)
+    kpiHTML = '<div class="card" style="grid-column:1/-1;text-align:center;color:var(--warn)">⚠ Snapshot uses legacy v1 format — upgrade pipeline for provenance</div>';
+  }
+  
+  kpiContainer.innerHTML = kpiHTML;
+
+  // ---- Price Chart ----
+  const priceHistory = snap.price_history || [];
+  if (priceHistory.length > 0) {
+    const labels = priceHistory.map(p => p.date);
+    const closes = priceHistory.map(p => p.close);
+    new Chart(document.getElementById('chart-price'), {
+      type: 'line',
+      data: {
+        labels: labels,
+        datasets: [{
+          label: 'BTC/USD',
+          data: closes,
+          borderColor: '#f7931a',
+          backgroundColor: 'rgba(247,147,26,0.08)',
+          fill: true, tension: 0.3, pointRadius: 0, borderWidth: 2
+        }]
+      },
+      options: {
+        responsive: true,
+        plugins: { legend: { display: false } },
+        scales: {
+          y: { grid: { color: 'rgba(255,255,255,0.05)' }, ticks: { callback: v => '$' + v.toLocaleString() } },
+          x: { grid: { display: false } }
+        }
+      }
+    });
+  }
+
+  // ---- Term Structure Chart ----
+  const optsRaw = snap.options || {};
+  const ts = optsRaw.term_structure;
+  if (ts && ts.front_month_iv != null && ts.back_month_iv != null) {
+    new Chart(document.getElementById('chart-terms'), {
+      type: 'bar',
+      data: {
+        labels: ['Front Month IV', 'Back Month IV'],
+        datasets: [{
+          label: 'Implied Volatility %',
+          data: [ts.front_month_iv, ts.back_month_iv],
+          backgroundColor: ['rgba(247,147,26,0.5)', 'rgba(59,130,246,0.5)'],
+          borderColor: ['rgba(247,147,26,1)', 'rgba(59,130,246,1)'],
+          borderWidth: 1, borderRadius: 6
+        }]
+      },
+      options: {
+        responsive: true,
+        plugins: { legend: { display: false } },
+        scales: {
+          y: { beginAtZero: false, grid: { color: 'rgba(255,255,255,0.05)' }, title: { display: true, text: 'IV %', color: '#6b7280' } },
+          x: { grid: { display: false } }
+        }
+      }
+    });
+  }
+
+  // ---- Regime Report ----
+  const checks = regime.checks || [];
+  let regimeHTML = '';
+  if (checks.length > 0) {
+    for (const c of checks) {
+      regimeHTML += (c.passed ? '✅' : '⛔') + ' <b>' + c.regime + '</b>: ' + c.reason + '\n';
+    }
+  } else {
+    regimeHTML = regimeName.replace(/_/g, ' ') + ' · Confidence: ' + fmtPct((regime.confidence || 0) * 100) + '\n';
+    if (regime.details && regime.details.reason) {
+      regimeHTML += 'Reason: ' + regime.details.reason + '\n';
+    }
+  }
+  document.getElementById('regime-report').innerHTML = regimeHTML || 'No regime data';
+
+  // ---- Build text report ----
+  let report = "=".repeat(60) + "\n";
+  report += "BTC MARKET SENTIMENT REPORT\n";
+  report += "Time: " + (genAt || "unknown") + "\n";
+  report += "=".repeat(60) + "\n\n";
+  
+  report += "💰 PRICE: " + fmtMoney(fieldValue(priceField)) + "\n\n";
+  
+  report += "🎯 REGIME: " + regimeName.replace(/_/g, " ") + "\n";
+  report += "   Confidence: " + fmtPct((regime.confidence || 0) * 100) + "\n";
+  
+  if (isV2) {
+    // Provenance-aware report
+    report += "\n📊 FIELD STATUS:\n";
+    for (const [key, f] of Object.entries(fields)) {
+      const status = fieldStatus(f);
+      const icon = status === "ok" ? "✅" : status === "stale" ? "⚠️" : "❌";
+      const age = fieldAgeMin(f);
+      const valStr = f.value != null ? String(f.value).substring(0, 40) : "null";
+      report += "   " + icon + " " + key + ": " + valStr + " (" + status;
+      if (age !== null) report += ", " + age + "m old";
+      report += ", " + f.source + ")\n";
+    }
+    
+    report += "\n⚖️ DERIVED:\n";
+    const streak = fields.funding_streak_days;
+    if (streak && streak.value != null) {
+      const sd = streak.value;
+      report += "   Funding streak: " + (sd < 0 ? "-" : sd > 0 ? "+" : "") + Math.abs(sd) + " days (" + sd + ")\n";
+    }
+  }
+  
+  report += "\n📊 OPTIONS SENTIMENT:\n";
+  const optsR = snap.options || {};
+  report += "   OI PCR: " + (optsR.put_call_ratio != null ? optsR.put_call_ratio.toFixed(2) : "null") + 
+            " (" + (optsR.pcr_interpretation || "") + ")\n";
+  if (optsR.max_oi) {
+    if (optsR.max_oi.put) report += "   Max OI Put: $" + fmtNum(optsR.max_oi.put.strike) + " (OI: " + (optsR.max_oi.put.open_interest || 0).toLocaleString() + ")\n";
+    if (optsR.max_oi.call) report += "   Max OI Call: $" + fmtNum(optsR.max_oi.call.strike) + " (OI: " + (optsR.max_oi.call.open_interest || 0).toLocaleString() + ")\n";
+  }
+  if (ts) report += "   Term structure: " + (ts.structure || "N/A") + " (Front: " + fmtPct(ts.front_month_iv) + ", Back: " + fmtPct(ts.back_month_iv) + ")\n";
+  
+  report += "\n🌍 MACRO BACKDROP:\n";
+  const macR = snap.macro || {};
+  report += "   Fed Funds: " + fmtPct(macR.fed_funds) + "\n";
+  report += "   10Y Treasury: " + fmtPct(macR.treasury_10y) + "\n";
+  report += "   VIX: " + fmtNum(macR.vix, 2) + " (" + (macR.volatility_regime || "Unknown") + ")\n";
+  report += "   Yield curve: " + (macR.yield_curve || "N/A") + "\n";
+  
+  report += "\n" + "=".repeat(60);
+  
+  document.getElementById("sentiment-report").textContent = report;
+  
+  // Footer
+  document.getElementById("snapshot-source").textContent = 
+    "Pi: " + (isV2 ? "self-published" : "manual") + " · schema v" + (snap._schema_version || 1);
+}
+
+load();
 </script>
 </body>
 </html>
