@@ -5,9 +5,9 @@ Wants=network-online.target
 
 [Service]
 Type=oneshot
-WorkingDirectory=/home/pi/Pondiki-apps/btc-terminal
-ExecStart=/bin/bash /home/pi/Pondiki-apps/btc-terminal/publish.sh
-User=pi
+WorkingDirectory=/home/cretan/Pondiki-apps/btc-terminal
+ExecStart=/bin/bash /home/cretan/Pondiki-apps/btc-terminal/publish.sh
+User=cretan
 StandardOutput=journal
 StandardError=journal
 

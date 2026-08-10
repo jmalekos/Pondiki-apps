@@ -10,7 +10,7 @@ from typing import Optional, Any
 import requests
 
 # Flexible path discovery — works on Pi and local workspace
-_PONDIKI_ROOT = os.environ.get("PONDIKI_ROOT", "/home/cretan/.openclaw/workspace")
+_PONDIKI_ROOT = os.environ.get("PONDIKI_ROOT", os.path.join(os.path.expanduser("~"), ".openclaw/workspace"))
 sys.path.insert(0, os.path.join(_PONDIKI_ROOT, "projects/trading-bot-claude"))
 sys.path.insert(0, os.path.join(_PONDIKI_ROOT, "tools"))
 
