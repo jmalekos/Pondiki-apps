@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import type { Portfolio } from "@/lib/solana";
+import type { NewsBundle, NewsItem } from "@/lib/news";
 
 const fmtUsd = (n: number | null, digits = 2) =>
   n == null ? "—" : `$${n.toLocaleString("en-US", { minimumFractionDigits: digits, maximumFractionDigits: digits })}`;
@@ -20,6 +21,8 @@ export default function Home() {
   const [copied, setCopied] = useState(false);
   const [now, setNow] = useState(Date.now());
   const [hideUnlisted, setHideUnlisted] = useState(false);
+  const [news, setNews] = useState<NewsBundle | null>(null);
+  const [roiPoints, setRoiPoints] = useState<{ t: number; v: number }[]>([]);
   const busy = useRef(false);
 
   const load = useCallback(async (force = false) => {
@@ -53,7 +56,48 @@ export default function Home() {
     return () => clearInterval(id);
   }, []);
 
+  // news: load on mount + every 10 min
+  const loadNewsNow = useCallback(async () => {
+    try {
+      const res = await fetch("/api/news", { cache: "no-store" });
+      const j = await res.json();
+      if (!j.error) setNews(j);
+    } catch {}
+  }, []);
+
+  useEffect(() => {
+    loadNewsNow();
+    const id = setInterval(loadNewsNow, 600_000);
+    return () => clearInterval(id);
+  }, [loadNewsNow]);
+
+  // ROI tracking: snapshot total (incl. unstaking) into localStorage, max 1 per 30 min
+  useEffect(() => {
+    if (!data) return;
+    try {
+      const KEY = "seeker-roi-v1";
+      const raw = localStorage.getItem(KEY);
+      let pts: { t: number; v: number }[] = raw ? JSON.parse(raw) : [];
+      const last = pts.length ? pts[pts.length - 1].t : 0;
+      const nowMs = Date.now();
+      if (nowMs - last > 30 * 60 * 1000) {
+        pts.push({ t: nowMs, v: data.totalWithUnstakingUsd });
+        if (pts.length > 1000) pts = pts.slice(-1000);
+        localStorage.setItem(KEY, JSON.stringify(pts));
+      }
+      setRoiPoints(pts);
+    } catch {}
+  }, [data]);
+
   const secondsAgo = data ? Math.max(0, Math.round((now - data.fetchedAt) / 1000)) : null;
+
+  // ROI: baseline = first snapshot, current = last snapshot
+  const roiBaseline = roiPoints.length ? roiPoints[0].v : null;
+  const roiCurrent = roiPoints.length ? roiPoints[roiPoints.length - 1].v : null;
+  const roiPct =
+    roiBaseline != null && roiCurrent != null && roiBaseline > 0
+      ? ((roiCurrent - roiBaseline) / roiBaseline) * 100
+      : null;
 
   const copyWallet = async () => {
     if (!data) return;
@@ -354,8 +398,72 @@ export default function Home() {
               </div>
             </section>
 
+            {/* cumulative ROI over time */}
+            <section>
+              <div className="mb-2 flex items-center justify-between gap-3">
+                <h2 className="text-[11px] font-semibold tracking-[0.2em] text-stone-500 uppercase">Cumulative ROI</h2>
+                <span className="font-mono text-[11px] text-stone-500">
+                  {roiPoints.length > 1 ? `${roiPoints.length} snapshots` : "tracking started"}
+                </span>
+              </div>
+              <div className="rounded-xl border border-white/5 bg-white/[0.02] p-4">
+                <div className="flex flex-wrap items-baseline gap-x-6 gap-y-2">
+                  <div>
+                    <div className="text-[10px] uppercase tracking-wider text-stone-600">Baseline</div>
+                    <div className="font-mono text-lg text-stone-300">{fmtUsd(roiPoints[0]?.v ?? null)}</div>
+                  </div>
+                  <div>
+                    <div className="text-[10px] uppercase tracking-wider text-stone-600">Current</div>
+                    <div className="font-mono text-lg text-stone-100">{fmtUsd(roiPoints[roiPoints.length - 1]?.v ?? null)}</div>
+                  </div>
+                  <div>
+                    <div className="text-[10px] uppercase tracking-wider text-stone-600">Cumulative ROI</div>
+                    <div className={`font-mono text-lg font-semibold ${roiPct == null ? "text-stone-500" : roiPct >= 0 ? "text-emerald-400" : "text-red-400"}`}>
+                      {roiPct == null ? "—" : `${roiPct >= 0 ? "+" : ""}${roiPct.toFixed(2)}%`}
+                    </div>
+                  </div>
+                </div>
+                {roiPoints.length < 2 ? (
+                  <p className="mt-3 text-xs text-stone-600">
+                    Snapshot tracking started — a point is saved locally every ~30 min. Check back later for the chart.
+                  </p>
+                ) : (
+                  <div className="mt-3">
+                    <RoiChart points={roiPoints} />
+                    <div className="mt-1 flex justify-between font-mono text-[10px] text-stone-600">
+                      <span>{new Date(roiPoints[0].t).toLocaleDateString()}</span>
+                      <span>{new Date(roiPoints[roiPoints.length - 1].t).toLocaleDateString()}</span>
+                    </div>
+                  </div>
+                )}
+              </div>
+            </section>
+
+            {/* news & alpha */}
+            <section>
+              <div className="mb-2 flex items-center justify-between gap-3">
+                <h2 className="text-[11px] font-semibold tracking-[0.2em] text-stone-500 uppercase">News & Alpha</h2>
+                <div className="flex items-center gap-3">
+                  <span className="font-mono text-[11px] text-stone-500">
+                    {news ? `${news.source === "x" ? "x.com" : "RSS"} · ${timeAgo(news.fetchedAt)}` : "loading…"}
+                  </span>
+                  <button
+                    onClick={loadNewsNow}
+                    className="rounded-md border border-amber-300/30 px-2.5 py-1 text-[11px] text-amber-300/90 hover:bg-amber-300/10 transition-colors"
+                  >
+                    ⟳
+                  </button>
+                </div>
+              </div>
+              <div className="grid gap-3 lg:grid-cols-3">
+                <NewsColumn title="Solana" items={news?.solana ?? []} />
+                <NewsColumn title="Seeker / SKR" items={news?.seeker ?? []} />
+                <NewsColumn title="Token Alpha" items={news?.alpha ?? []} />
+              </div>
+            </section>
+
             <p className="text-center text-[11px] text-stone-600">
-              Data: public Solana RPC · DexScreener · Jupiter. Auto-refresh 60s. No keys stored.
+              Data: public Solana RPC · DexScreener · Jupiter · Google News RSS. Auto-refresh 60s. No keys stored.
             </p>
           </>
         )}
@@ -384,6 +492,76 @@ function Card({
       <div className="text-[11px] uppercase tracking-[0.18em] text-stone-500">{label}</div>
       <div className={`mt-1.5 font-mono text-2xl font-semibold tabular-nums ${toneClass}`}>{big}</div>
       {sub && <div className="mt-0.5 font-mono text-[11px] text-stone-500">{sub}</div>}
+    </div>
+  );
+}
+
+function timeAgo(ts: number | string): string {
+  const t = typeof ts === "number" ? ts : new Date(ts).getTime();
+  if (!t) return "";
+  const s = Math.max(0, Math.floor((Date.now() - t) / 1000));
+  if (s < 60) return "just now";
+  if (s < 3600) return `${Math.floor(s / 60)}m ago`;
+  if (s < 86400) return `${Math.floor(s / 3600)}h ago`;
+  return `${Math.floor(s / 86400)}d ago`;
+}
+
+function RoiChart({ points }: { points: { t: number; v: number }[] }) {
+  if (points.length < 2) return null;
+  const W = 600;
+  const H = 96;
+  const PAD = 6;
+  const vals = points.map((p) => p.v);
+  const min = Math.min(...vals);
+  const max = Math.max(...vals);
+  const range = max - min || 1;
+  const coords = points.map((p, i) => {
+    const x = PAD + (i / (points.length - 1)) * (W - 2 * PAD);
+    const y = H - PAD - ((p.v - min) / range) * (H - 2 * PAD);
+    return `${x.toFixed(1)},${y.toFixed(1)}`;
+  });
+  const last = coords[coords.length - 1].split(",").map(Number);
+  return (
+    <svg viewBox={`0 0 ${W} ${H}`} className="h-24 w-full" preserveAspectRatio="none">
+      <polyline
+        points={coords.join(" ")}
+        fill="none"
+        stroke="#fbbf24"
+        strokeWidth="2"
+        vectorEffect="non-scaling-stroke"
+      />
+      <circle cx={last[0]} cy={last[1]} r="3.5" fill="#fbbf24" />
+    </svg>
+  );
+}
+
+function NewsColumn({ title, items }: { title: string; items: NewsItem[] }) {
+  return (
+    <div className="rounded-xl border border-white/5 bg-white/[0.02] p-4">
+      <h3 className="mb-3 text-[11px] font-semibold uppercase tracking-[0.2em] text-stone-500">{title}</h3>
+      {items.length === 0 ? (
+        <p className="text-xs text-stone-600">No headlines right now.</p>
+      ) : (
+        <ul className="space-y-3">
+          {items.map((it, i) => (
+            <li key={i}>
+              <a
+                href={it.link}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="group block transition-colors"
+              >
+                <span className="block text-[13px] leading-snug text-stone-300 group-hover:text-amber-300">
+                  {it.title}
+                </span>
+                <span className="mt-0.5 block font-mono text-[10px] text-stone-600">
+                  {it.source} · {timeAgo(it.pubDate)}
+                </span>
+              </a>
+            </li>
+          ))}
+        </ul>
+      )}
     </div>
   );
 }
