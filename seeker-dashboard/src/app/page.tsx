@@ -179,6 +179,7 @@ export default function Home() {
                                 <div>
                                   <div className="font-medium text-stone-100">{p.symbol}</div>
                                   <div className="text-[11px] text-stone-500">{p.name}</div>
+                                  {p.detail && <div className="text-[11px] text-amber-300/80">{p.detail}</div>}
                                 </div>
                               </div>
                             </td>

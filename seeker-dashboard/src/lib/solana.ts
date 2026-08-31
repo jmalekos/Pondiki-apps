@@ -44,6 +44,7 @@ export interface StakedPosition {
   usdTotal: number;
   apy: number | null;
   apyNote?: string;
+  detail?: string;
 }
 
 export interface StakingInfo {
@@ -80,7 +81,9 @@ const SPL_PROG = "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA";
 const TOKEN2022_PROG = "TokenzQdBNbLqP5VEhdkAS6EPFLC1PHnBqCXEpPxuEb";
 const STAKE_PROG = "Stake11111111111111111111111111111111111111";
 const SKR_MINT = "SKRbvo6Gf7GondiT3BbTfuRDPqLWei4j2Qy2NPGZhW3";
+const SKR_STAKING_PROG = "SKRskrmtL83pcL4YqLWt6iPefDqwXQWHSw9S9vz94BZ";
 const SKR_APY_BASE = 15; // SKR staking APY per Seeker (Cretan, 2026-08-31)
+const SKR_UNSTAKING = 30_000; // SKR in unstaking cooldown (Cretan, 2026-08-31)
 const DEACT_MAX = BigInt("0xFFFFFFFFFFFFFFFF");
 
 const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
@@ -285,6 +288,41 @@ async function fetchValidator(voteIdentity: string): Promise<ValidatorInfo | nul
   };
 }
 
+// ---- SKR staking (Solana Mobile program) ----
+async function fetchSkrStake(): Promise<{ staked: number } | null> {
+  try {
+    const res = await fetch(RPC, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        jsonrpc: "2.0",
+        id: 1,
+        method: "getProgramAccounts",
+        params: [
+          SKR_STAKING_PROG,
+          {
+            encoding: "base64",
+            filters: [{ memcmp: { offset: 41, bytes: WALLET } }],
+          },
+        ],
+      }),
+      cache: "no-store",
+    });
+    if (!res.ok) return null;
+    const j = await res.json();
+    const raw: { pubkey: string; account: { data: [string, string] } }[] = j?.result ?? [];
+    if (!raw.length) return null;
+    const data = Buffer.from(raw[0].account.data[0], "base64");
+    // UserStake layout (bincode): disc(8) + guardian(32) + bump(1) + staker(32) + vote(32)
+    // then fields: ... staked_amount u64 @153, unstake_timestamp i64 @161
+    if (data.length < 169) return null;
+    const stakedBase = Number(data.readBigUInt64LE(153));
+    return { staked: stakedBase / 1e6 };
+  } catch {
+    return null;
+  }
+}
+
 export async function getPortfolio(force = false): Promise<Portfolio> {
   if (!force && cache && Date.now() - cache.at < TTL_MS) return cache.data;
 
@@ -398,6 +436,8 @@ export async function getPortfolio(force = false): Promise<Portfolio> {
         ? (totalStakedSol * validator.totalApy * solPrice) / 100
         : null;
     const skrHolding = holdings.find((h) => h.mint === SKR_MINT);
+    const skrStake = await fetchSkrStake();
+    const skrStaked = skrStake?.staked ?? 0;
     const positions: StakedPosition[] = [
       {
         symbol: "SOL",
@@ -409,10 +449,11 @@ export async function getPortfolio(force = false): Promise<Portfolio> {
       {
         symbol: "SKR",
         name: "Seeker",
-        qty: skrHolding?.amount ?? 0,
-        usdTotal: skrHolding?.valueUsd ?? 0,
-        apy: skrHolding ? SKR_APY_BASE : null,
+        qty: skrStaked,
+        usdTotal: skrStaked * (skrHolding?.priceUsd ?? 0),
+        apy: skrStaked > 0 ? SKR_APY_BASE : null,
         apyNote: "per Seeker staking",
+        detail: `${SKR_UNSTAKING.toLocaleString()} unstaking (cooldown)`,
       },
     ];
     staking = {
