@@ -294,7 +294,7 @@ async function fetchValidator(voteIdentity: string): Promise<ValidatorInfo | nul
 }
 
 // ---- SKR staking (Solana Mobile program) ----
-async function fetchSkrStake(): Promise<{ staked: number } | null> {
+async function fetchSkrStake(): Promise<{ staked: number; lifetimeStaked: number } | null> {
   try {
     const res = await fetch(RPC, {
       method: "POST",
@@ -319,10 +319,11 @@ async function fetchSkrStake(): Promise<{ staked: number } | null> {
     if (!raw.length) return null;
     const data = Buffer.from(raw[0].account.data[0], "base64");
     // UserStake layout (bincode): disc(8) + guardian(32) + bump(1) + staker(32) + vote(32)
-    // then fields: ... staked_amount u64 @153, unstake_timestamp i64 @161
+    // then u64 fields @105..@161: @105 pending, @121 CURRENT STAKED, @153 LIFETIME STAKED, @161 cooldown ts
     if (data.length < 169) return null;
-    const stakedBase = Number(data.readBigUInt64LE(153));
-    return { staked: stakedBase / 1e6 };
+    const stakedBase = Number(data.readBigUInt64LE(121));
+    const lifetimeBase = Number(data.readBigUInt64LE(153));
+    return { staked: stakedBase / 1e6, lifetimeStaked: lifetimeBase / 1e6 };
   } catch {
     return null;
   }
@@ -447,6 +448,7 @@ export async function getPortfolio(force = false): Promise<Portfolio> {
     const skrHolding = holdings.find((h) => h.mint === SKR_MINT);
     const skrStake = await fetchSkrStake();
     const skrStaked = skrStake?.staked ?? 0;
+    const skrLifetime = skrStake?.lifetimeStaked ?? 0;
     const positions: StakedPosition[] = [
       {
         symbol: "SOL",
@@ -462,7 +464,7 @@ export async function getPortfolio(force = false): Promise<Portfolio> {
         usdTotal: skrStaked * (skrHolding?.priceUsd ?? 0),
         apy: skrStaked > 0 ? SKR_APY_BASE : null,
         apyNote: "per Seeker staking",
-        detail: `${SKR_UNSTAKING.toLocaleString()} unstaking (cooldown)`,
+        detail: `${SKR_UNSTAKING.toLocaleString()} unstaking (cooldown) · lifetime staked ${skrLifetime.toLocaleString()}`,
       },
     ];
     staking = {
