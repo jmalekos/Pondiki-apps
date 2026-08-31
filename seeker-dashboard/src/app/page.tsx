@@ -19,6 +19,7 @@ export default function Home() {
   const [lastTick, setLastTick] = useState(0);
   const [copied, setCopied] = useState(false);
   const [now, setNow] = useState(Date.now());
+  const [hideUnlisted, setHideUnlisted] = useState(false);
   const busy = useRef(false);
 
   const load = useCallback(async (force = false) => {
@@ -199,7 +200,8 @@ export default function Home() {
             {data.unpricedCount > 0 && (
               <div className="rounded-lg border border-amber-400/25 bg-amber-400/[0.06] px-4 py-3 text-[13px] text-amber-200/90">
                 ⚠ {data.unpricedCount} holding{data.unpricedCount > 1 ? "s" : ""} unpriced — not tradable on Jupiter,
-                no DexScreener pairs. Likely scam airdrops / unlisted tokens. Not counted in total.
+                no DexScreener pairs. Likely scam airdrops / unlisted tokens. Not counted in total
+                {hideUnlisted ? " · hidden from table" : ""}.
               </div>
             )}
 
@@ -222,7 +224,21 @@ export default function Home() {
 
             {/* holdings table */}
             <section>
-              <h2 className="mb-2 text-[11px] font-semibold tracking-[0.2em] text-stone-500 uppercase">Holdings</h2>
+              <div className="mb-2 flex items-center justify-between gap-3">
+                <h2 className="text-[11px] font-semibold tracking-[0.2em] text-stone-500 uppercase">Holdings</h2>
+                <label className="flex cursor-pointer select-none items-center gap-2 text-xs text-stone-400">
+                  <input
+                    type="checkbox"
+                    checked={hideUnlisted}
+                    onChange={(e) => setHideUnlisted(e.target.checked)}
+                    className="h-3.5 w-3.5 accent-amber-300"
+                  />
+                  Hide unlisted
+                  {hideUnlisted && data.unpricedCount > 0 && (
+                    <span className="font-mono text-[11px] text-stone-500">({data.unpricedCount} hidden)</span>
+                  )}
+                </label>
+              </div>
               <div className="overflow-x-auto rounded-xl border border-white/5 bg-white/[0.02]">
                 <table className="w-full min-w-[640px] text-sm">
                   <thead>
@@ -236,7 +252,9 @@ export default function Home() {
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-white/5">
-                    {data.holdings.map((h) => {
+                    {data.holdings
+                      .filter((h) => !hideUnlisted || h.tradable)
+                      .map((h) => {
                       const alloc = h.valueUsd != null && data.totalUsd > 0 ? (h.valueUsd / data.totalUsd) * 100 : null;
                       return (
                         <tr key={h.mint} className="group hover:bg-white/[0.03] transition-colors">
