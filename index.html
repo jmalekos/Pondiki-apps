@@ -84,6 +84,25 @@ body {
 }
 .card:hover .arrow { color: var(--accent); transform: translateX(4px); }
 
+.toolbar {
+  display: flex; align-items: center; justify-content: center; gap: 16px;
+  margin: -32px 0 40px; flex-wrap: wrap;
+}
+.toolbar .updated {
+  color: var(--dim); font-size: 0.78rem; font-family: 'Courier New', monospace;
+}
+.toolbar button {
+  background: rgba(139,92,246,0.12); color: var(--accent);
+  border: 1px solid rgba(139,92,246,0.3); border-radius: 8px;
+  padding: 8px 16px; font-size: 0.8rem; cursor: pointer;
+  font-family: inherit; transition: all 0.2s ease;
+}
+.toolbar button:hover { background: rgba(139,92,246,0.25); }
+.toolbar button:disabled { opacity: 0.5; cursor: default; }
+.live { font-weight: 600; }
+.live-up { color: var(--green); }
+.live-down { color: var(--red); }
+
 .footer {
   text-align: center; color: var(--dim); font-size: 0.75rem;
   margin-top: 56px;
@@ -99,6 +118,11 @@ body {
     <span class="emoji">🐭</span>
     <h1><span>Pondiki</span> Dashboards</h1>
     <p class="tagline">The research agent of the Labyrinth · monitoring &amp; tools</p>
+  </div>
+
+  <div class="toolbar">
+    <span class="updated" id="updated-label">loading…</span>
+    <button id="refresh-btn" onclick="refresh()">⟳ Refresh</button>
   </div>
 
   <div class="grid">
@@ -118,6 +142,7 @@ body {
       <div class="meta">
         <span>🟠 BTC · Options · Macro</span>
         <span>📊 Chart.js</span>
+        <span id="btc-live" class="live">—</span>
       </div>
     </a>
 
@@ -174,6 +199,7 @@ body {
       <div class="meta">
         <span>🟢 SOL · SPL · cbBTC</span>
         <span>📊 Next.js</span>
+        <span id="seeker-live" class="live">—</span>
       </div>
     </a>
   </div>
@@ -183,5 +209,43 @@ body {
   Pondiki Dashboards · <a href="https://github.com/jmalekos/Pondiki-apps">GitHub</a> ·
   Built by the mouse in the labyrinth 🐭
 </div>
+
+<script>
+const fmtUsd = (n) => n == null ? "—" : "$" + Number(n).toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+let lastUpdate = 0;
+
+async function refresh() {
+  const btn = document.getElementById("refresh-btn");
+  btn.disabled = true; btn.textContent = "⟳ refreshing…";
+  const [btc, seeker] = await Promise.all([
+    fetch("https://api.binance.com/api/v3/ticker/24hr?symbol=BTCUSDT").then(r => r.ok ? r.json() : null).catch(() => null),
+    fetch("https://seeker-dashboard.vercel.app/api/portfolio").then(r => r.ok ? r.json() : null).catch(() => null),
+  ]);
+  const btcEl = document.getElementById("btc-live");
+  if (btc && btc.lastPrice) {
+    const chg = parseFloat(btc.priceChangePercent || 0);
+    btcEl.textContent = fmtUsd(parseFloat(btc.lastPrice)) + (chg >= 0 ? " +" : " ") + chg.toFixed(2) + "%";
+    btcEl.className = "live " + (chg >= 0 ? "live-up" : "live-down");
+  } else btcEl.textContent = "—";
+  const skEl = document.getElementById("seeker-live");
+  if (seeker && seeker.totalUsd != null) {
+    skEl.textContent = "Σ " + fmtUsd(seeker.totalUsd);
+    skEl.className = "live";
+  } else skEl.textContent = "—";
+  lastUpdate = Date.now();
+  btn.disabled = false; btn.textContent = "⟳ Refresh";
+  tick();
+}
+
+function tick() {
+  const el = document.getElementById("updated-label");
+  if (lastUpdate) {
+    const s = Math.max(0, Math.round((Date.now() - lastUpdate) / 1000));
+    el.textContent = "updated " + s + "s ago";
+  }
+}
+setInterval(tick, 5000);
+refresh();
+</script>
 </body>
 </html>
