@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import type { Portfolio } from "@/lib/solana";
 import type { NewsBundle, NewsItem } from "@/lib/news";
 
@@ -23,6 +23,10 @@ export default function Home() {
   const [hideUnlisted, setHideUnlisted] = useState(false);
   const [news, setNews] = useState<NewsBundle | null>(null);
   const [roiPoints, setRoiPoints] = useState<{ t: number; v: number }[]>([]);
+  const [roiHistory, setRoiHistory] = useState<{
+    baseline: { date: string; valueUsd: number } | null;
+    points: { date: string; valueUsd: number; roiPct: number | null }[];
+  } | null>(null);
   const busy = useRef(false);
 
   const load = useCallback(async (force = false) => {
@@ -71,6 +75,16 @@ export default function Home() {
     return () => clearInterval(id);
   }, [loadNewsNow]);
 
+  // ROI history: reconstructed from on-chain tx history + CoinGecko prices (public/roi-history.json)
+  useEffect(() => {
+    fetch("/roi-history.json", { cache: "no-store" })
+      .then((r) => (r.ok ? r.json() : null))
+      .then((j) => {
+        if (j && Array.isArray(j.points) && j.points.length) setRoiHistory(j);
+      })
+      .catch(() => {});
+  }, []);
+
   // ROI tracking: snapshot total (incl. unstaking) into localStorage, max 1 per 30 min
   useEffect(() => {
     if (!data) return;
@@ -89,11 +103,24 @@ export default function Home() {
     } catch {}
   }, [data]);
 
+  // merge: historical series (daily since Sep 2025) + live snapshots newer than history
+  const chartPoints = useMemo(() => {
+    const hist: { t: number; v: number }[] = (roiHistory?.points ?? []).map((p) => ({
+      t: new Date(p.date + "T00:00:00Z").getTime(),
+      v: p.valueUsd,
+    }));
+    const lastHistT = hist.length ? hist[hist.length - 1].t : 0;
+    const live = roiPoints.filter((p) => p.t > lastHistT);
+    return [...hist, ...live];
+  }, [roiHistory, roiPoints]);
+
   const secondsAgo = data ? Math.max(0, Math.round((now - data.fetchedAt) / 1000)) : null;
 
-  // ROI: baseline = first snapshot, current = last snapshot
-  const roiBaseline = roiPoints.length ? roiPoints[0].v : null;
-  const roiCurrent = roiPoints.length ? roiPoints[roiPoints.length - 1].v : null;
+  // ROI: baseline = first funded snapshot from history, current = last merged point
+  const roiBaseline = roiHistory?.baseline?.valueUsd ?? chartPoints[0]?.v ?? null;
+  const roiBaselineDate =
+    roiHistory?.baseline?.date ?? (chartPoints.length ? new Date(chartPoints[0].t).toISOString().slice(0, 10) : null);
+  const roiCurrent = chartPoints.length ? chartPoints[chartPoints.length - 1].v : null;
   const roiPct =
     roiBaseline != null && roiCurrent != null && roiBaseline > 0
       ? ((roiCurrent - roiBaseline) / roiBaseline) * 100
@@ -403,18 +430,18 @@ export default function Home() {
               <div className="mb-2 flex items-center justify-between gap-3">
                 <h2 className="text-[11px] font-semibold tracking-[0.2em] text-stone-500 uppercase">Cumulative ROI</h2>
                 <span className="font-mono text-[11px] text-stone-500">
-                  {roiPoints.length > 1 ? `${roiPoints.length} snapshots` : "tracking started"}
+                  {roiHistory ? `reconstructed · ${chartPoints.length} pts` : chartPoints.length > 1 ? `${chartPoints.length} snapshots` : "tracking…"}
                 </span>
               </div>
               <div className="rounded-xl border border-white/5 bg-white/[0.02] p-4">
                 <div className="flex flex-wrap items-baseline gap-x-6 gap-y-2">
                   <div>
-                    <div className="text-[10px] uppercase tracking-wider text-stone-600">Baseline</div>
-                    <div className="font-mono text-lg text-stone-300">{fmtUsd(roiPoints[0]?.v ?? null)}</div>
+                    <div className="text-[10px] uppercase tracking-wider text-stone-600">Baseline{roiBaselineDate ? ` · ${roiBaselineDate}` : ""}</div>
+                    <div className="font-mono text-lg text-stone-300">{fmtUsd(roiBaseline)}</div>
                   </div>
                   <div>
                     <div className="text-[10px] uppercase tracking-wider text-stone-600">Current</div>
-                    <div className="font-mono text-lg text-stone-100">{fmtUsd(roiPoints[roiPoints.length - 1]?.v ?? null)}</div>
+                    <div className="font-mono text-lg text-stone-100">{fmtUsd(roiCurrent)}</div>
                   </div>
                   <div>
                     <div className="text-[10px] uppercase tracking-wider text-stone-600">Cumulative ROI</div>
@@ -423,17 +450,22 @@ export default function Home() {
                     </div>
                   </div>
                 </div>
-                {roiPoints.length < 2 ? (
+                {chartPoints.length < 2 ? (
                   <p className="mt-3 text-xs text-stone-600">
-                    Snapshot tracking started — a point is saved locally every ~30 min. Check back later for the chart.
+                    Loading historical ROI… (reconstructed from wallet tx history + CoinGecko prices)
                   </p>
                 ) : (
                   <div className="mt-3">
-                    <RoiChart points={roiPoints} />
+                    <RoiChart points={chartPoints} />
                     <div className="mt-1 flex justify-between font-mono text-[10px] text-stone-600">
-                      <span>{new Date(roiPoints[0].t).toLocaleDateString()}</span>
-                      <span>{new Date(roiPoints[roiPoints.length - 1].t).toLocaleDateString()}</span>
+                      <span>{new Date(chartPoints[0].t).toLocaleDateString()}</span>
+                      <span>{new Date(chartPoints[chartPoints.length - 1].t).toLocaleDateString()}</span>
                     </div>
+                    {roiHistory && (
+                      <p className="mt-2 text-[10px] text-stone-600">
+                        Reconstructed from {roiHistory.points.length} on-chain tx snapshots · CoinGecko historical prices · BIRB flat $0.06 (unlisted) · SKR calibrated to verified on-chain state
+                      </p>
+                    )}
                   </div>
                 )}
               </div>
