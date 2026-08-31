@@ -80,7 +80,7 @@ const SPL_PROG = "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA";
 const TOKEN2022_PROG = "TokenzQdBNbLqP5VEhdkAS6EPFLC1PHnBqCXEpPxuEb";
 const STAKE_PROG = "Stake11111111111111111111111111111111111111";
 const SKR_MINT = "SKRbvo6Gf7GondiT3BbTfuRDPqLWei4j2Qy2NPGZhW3";
-const SKR_APY_BASE = 24; // documented base SKR staking APY (inflation-based, varies)
+const SKR_APY_BASE = 15; // SKR staking APY per Seeker (Cretan, 2026-08-31)
 const DEACT_MAX = BigInt("0xFFFFFFFFFFFFFFFF");
 
 const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
@@ -412,7 +412,7 @@ export async function getPortfolio(force = false): Promise<Portfolio> {
         qty: skrHolding?.amount ?? 0,
         usdTotal: skrHolding?.valueUsd ?? 0,
         apy: skrHolding ? SKR_APY_BASE : null,
-        apyNote: "base est. (inflation-based)",
+        apyNote: "per Seeker staking",
       },
     ];
     staking = {
