@@ -1,8 +1,8 @@
 {
-  "generated_at": "2026-08-31T09:39:21.160868+00:00",
+  "generated_at": "2026-08-31T09:45:21.242112+00:00",
   "fields": {
     "btc_price": {
-      "value": 78619.4921875,
+      "value": 78730.9609375,
       "source": "yahoo:BTC-USD",
       "fetched_at": "2026-08-31T00:00:00+00:00",
       "ttl": 60,
@@ -11,49 +11,49 @@
     "fear_greed": {
       "value": 62,
       "source": "alternative.me/fng",
-      "fetched_at": "2026-08-31T09:39:21.781585+00:00",
+      "fetched_at": "2026-08-31T09:45:21.870435+00:00",
       "ttl": 21600,
       "status": "ok"
     },
     "funding_8h": {
       "value": 7.002e-05,
       "source": "deribit:BTC-PERP",
-      "fetched_at": "2026-08-31T09:39:22.026246+00:00",
+      "fetched_at": "2026-08-31T09:45:22.155734+00:00",
       "ttl": 900,
       "status": "ok"
     },
     "funding_streak_days": {
       "value": 0,
       "source": "derived:funding_streak_days(deribit:BTC-PERP)",
-      "fetched_at": "2026-08-31T09:39:21.160868+00:00",
+      "fetched_at": "2026-08-31T09:45:21.242112+00:00",
       "ttl": 900,
       "status": "ok"
     },
     "vix": {
       "value": 14.51,
       "source": "FRED:VIXCLS",
-      "fetched_at": "2026-08-31T09:39:32.560311+00:00",
+      "fetched_at": "2026-08-31T09:45:32.916134+00:00",
       "ttl": 86400,
       "status": "ok"
     },
     "ust_10y": {
       "value": 4.67,
       "source": "FRED:DGS10",
-      "fetched_at": "2026-08-31T09:39:32.560346+00:00",
+      "fetched_at": "2026-08-31T09:45:32.916172+00:00",
       "ttl": 86400,
       "status": "ok"
     },
     "fed_funds": {
       "value": 3.63,
       "source": "FRED:FEDFUNDS",
-      "fetched_at": "2026-08-31T09:39:32.560359+00:00",
+      "fetched_at": "2026-08-31T09:45:32.916187+00:00",
       "ttl": 172800,
       "status": "ok"
     }
   },
   "options": {
-    "btc_price": 78646.0,
-    "put_call_ratio": 1.2430452818147537,
+    "btc_price": 78752.0,
+    "put_call_ratio": 1.243784991152496,
     "volume_weighted_pcr": null,
     "skew": 0.0,
     "sentiment": "Bearish (OI PCR 1.24)",
@@ -61,23 +61,23 @@
       "put": {
         "strike": 75000.0,
         "open_interest": 4586.1,
-        "iv": 35.55
+        "iv": 35.56
       },
       "call": {
         "strike": 75000.0,
         "open_interest": 3444.0,
-        "iv": 35.55
+        "iv": 35.56
       }
     },
     "term_structure": {
-      "front_month_iv": 35.346666666666664,
-      "back_month_iv": 36.97666666666667,
-      "contango": 1.6300000000000026,
+      "front_month_iv": 35.36333333333334,
+      "back_month_iv": 37.00333333333333,
+      "contango": 1.6399999999999935,
       "structure": "Contango"
     },
     "is_valid": true,
     "pcr_interpretation": "Neutral",
-    "_fetched_at": "2026-08-31T09:39:21.160868+00:00"
+    "_fetched_at": "2026-08-31T09:45:21.242112+00:00"
   },
   "macro": {
     "fed_funds": 3.63,
@@ -86,7 +86,7 @@
     "yield_curve": "10Y\u20112Y spread: 0.39% (normal)",
     "volatility_regime": "Calm",
     "curve_signal": "Normal",
-    "_fetched_at": "2026-08-31T09:39:21.160868+00:00"
+    "_fetched_at": "2026-08-31T09:45:21.242112+00:00"
   },
   "regime": {
     "final_regime": "RANGE_BOUND",
