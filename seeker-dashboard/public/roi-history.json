@@ -1,6 +1,6 @@
 {
  "wallet": "CKnkuC4jhtKq1DGiXcGztxSsRsUNVBF44zQFqkaMYwg8",
- "generatedAt": "2026-08-31T23:09:50Z",
+ "generatedAt": "2026-08-31T23:19:52Z",
  "baseline": {
   "date": "2025-09-05",
   "valueUsd": 1822.44
@@ -81,355 +81,355 @@
   },
   {
    "date": "2025-12-08",
-   "valueUsd": 223.38,
-   "liquidUsd": 223.38,
+   "valueUsd": 223.45,
+   "liquidUsd": 223.45,
    "stakedUsd": 0.0,
    "unstakingUsd": 0.0,
    "roiPct": -87.74
   },
   {
    "date": "2025-12-09",
-   "valueUsd": 224.09,
-   "liquidUsd": 224.09,
+   "valueUsd": 225.6,
+   "liquidUsd": 225.6,
    "stakedUsd": 0.0,
    "unstakingUsd": 0.0,
-   "roiPct": -87.7
+   "roiPct": -87.62
   },
   {
    "date": "2025-12-14",
-   "valueUsd": 220.03,
-   "liquidUsd": 220.03,
+   "valueUsd": 221.52,
+   "liquidUsd": 221.52,
    "stakedUsd": 0.0,
    "unstakingUsd": 0.0,
-   "roiPct": -87.93
+   "roiPct": -87.84
   },
   {
    "date": "2025-12-25",
-   "valueUsd": 196.1,
-   "liquidUsd": 196.1,
+   "valueUsd": 197.58,
+   "liquidUsd": 197.58,
    "stakedUsd": 0.0,
    "unstakingUsd": 0.0,
-   "roiPct": -89.24
+   "roiPct": -89.16
   },
   {
    "date": "2026-01-05",
-   "valueUsd": 215.27,
-   "liquidUsd": 80.53,
+   "valueUsd": 216.77,
+   "liquidUsd": 82.03,
    "stakedUsd": 134.74,
+   "unstakingUsd": 0.0,
+   "roiPct": -88.11
+  },
+  {
+   "date": "2026-01-20",
+   "valueUsd": 215.18,
+   "liquidUsd": 81.46,
+   "stakedUsd": 133.72,
    "unstakingUsd": 0.0,
    "roiPct": -88.19
   },
   {
-   "date": "2026-01-20",
-   "valueUsd": 213.64,
-   "liquidUsd": 79.92,
-   "stakedUsd": 133.72,
-   "unstakingUsd": 0.0,
-   "roiPct": -88.28
-  },
-  {
    "date": "2026-01-21",
-   "valueUsd": 526.2,
-   "liquidUsd": 70.0,
+   "valueUsd": 679.47,
+   "liquidUsd": 223.26,
    "stakedUsd": 456.2,
    "unstakingUsd": 0.0,
-   "roiPct": -71.13
+   "roiPct": -62.72
   },
   {
    "date": "2026-01-22",
-   "valueUsd": 695.77,
-   "liquidUsd": 71.95,
+   "valueUsd": 1044.42,
+   "liquidUsd": 420.6,
    "stakedUsd": 623.82,
    "unstakingUsd": 0.0,
-   "roiPct": -61.82
+   "roiPct": -42.69
   },
   {
    "date": "2026-01-23",
-   "valueUsd": 1195.69,
-   "liquidUsd": 71.26,
+   "valueUsd": 1597.58,
+   "liquidUsd": 473.14,
    "stakedUsd": 793.03,
    "unstakingUsd": 331.4,
-   "roiPct": -34.39
+   "roiPct": -12.34
   },
   {
    "date": "2026-01-24",
-   "valueUsd": 925.09,
-   "liquidUsd": 70.54,
+   "valueUsd": 1318.65,
+   "liquidUsd": 464.1,
    "stakedUsd": 612.63,
    "unstakingUsd": 241.92,
-   "roiPct": -49.24
+   "roiPct": -27.64
   },
   {
    "date": "2026-01-31",
-   "valueUsd": 639.83,
-   "liquidUsd": 64.62,
+   "valueUsd": 999.47,
+   "liquidUsd": 424.25,
    "stakedUsd": 422.94,
    "unstakingUsd": 152.27,
-   "roiPct": -64.89
+   "roiPct": -45.16
   },
   {
    "date": "2026-02-02",
-   "valueUsd": 545.09,
-   "liquidUsd": 55.49,
+   "valueUsd": 895.88,
+   "liquidUsd": 406.28,
    "stakedUsd": 360.29,
    "unstakingUsd": 129.31,
-   "roiPct": -70.09
+   "roiPct": -50.84
   },
   {
    "date": "2026-02-07",
-   "valueUsd": 758.01,
-   "liquidUsd": 47.84,
+   "valueUsd": 1138.93,
+   "liquidUsd": 428.75,
    "stakedUsd": 502.81,
    "unstakingUsd": 207.37,
-   "roiPct": -58.41
+   "roiPct": -37.51
   },
   {
    "date": "2026-02-11",
-   "valueUsd": 714.5,
-   "liquidUsd": 33.0,
+   "valueUsd": 1090.66,
+   "liquidUsd": 409.17,
    "stakedUsd": 486.55,
    "unstakingUsd": 194.95,
-   "roiPct": -60.79
+   "roiPct": -40.15
   },
   {
    "date": "2026-02-14",
-   "valueUsd": 683.39,
-   "liquidUsd": 33.59,
+   "valueUsd": 1055.07,
+   "liquidUsd": 405.28,
    "stakedUsd": 465.97,
    "unstakingUsd": 183.83,
-   "roiPct": -62.5
+   "roiPct": -42.11
   },
   {
    "date": "2026-02-15",
-   "valueUsd": 692.32,
-   "liquidUsd": 17.23,
+   "valueUsd": 1059.27,
+   "liquidUsd": 384.18,
    "stakedUsd": 491.43,
    "unstakingUsd": 183.66,
-   "roiPct": -62.01
+   "roiPct": -41.88
   },
   {
    "date": "2026-02-26",
-   "valueUsd": 694.09,
-   "liquidUsd": 17.2,
+   "valueUsd": 1026.79,
+   "liquidUsd": 349.91,
    "stakedUsd": 500.76,
    "unstakingUsd": 176.13,
-   "roiPct": -61.91
+   "roiPct": -43.66
   },
   {
    "date": "2026-02-27",
-   "valueUsd": 661.13,
-   "liquidUsd": 16.81,
+   "valueUsd": 976.77,
+   "liquidUsd": 332.45,
    "stakedUsd": 481.23,
    "unstakingUsd": 163.08,
-   "roiPct": -63.72
+   "roiPct": -46.4
   },
   {
    "date": "2026-03-01",
-   "valueUsd": 684.24,
-   "liquidUsd": 16.53,
+   "valueUsd": 997.87,
+   "liquidUsd": 330.16,
    "stakedUsd": 496.8,
    "unstakingUsd": 170.9,
-   "roiPct": -62.45
+   "roiPct": -45.25
   },
   {
    "date": "2026-03-05",
-   "valueUsd": 1057.77,
-   "liquidUsd": 189.16,
+   "valueUsd": 1386.65,
+   "liquidUsd": 518.04,
    "stakedUsd": 695.6,
    "unstakingUsd": 173.01,
-   "roiPct": -41.96
+   "roiPct": -23.91
   },
   {
    "date": "2026-03-07",
-   "valueUsd": 1027.77,
-   "liquidUsd": 39.19,
+   "valueUsd": 1345.3,
+   "liquidUsd": 356.72,
    "stakedUsd": 807.93,
    "unstakingUsd": 180.65,
-   "roiPct": -43.6
+   "roiPct": -26.18
   },
   {
    "date": "2026-03-08",
-   "valueUsd": 1087.77,
-   "liquidUsd": 37.42,
+   "valueUsd": 1403.13,
+   "liquidUsd": 352.78,
    "stakedUsd": 856.62,
    "unstakingUsd": 193.73,
-   "roiPct": -40.31
+   "roiPct": -23.01
   },
   {
    "date": "2026-03-12",
-   "valueUsd": 1248.54,
-   "liquidUsd": 254.52,
+   "valueUsd": 1571.19,
+   "liquidUsd": 577.16,
    "stakedUsd": 812.76,
    "unstakingUsd": 181.26,
-   "roiPct": -31.49
+   "roiPct": -13.79
   },
   {
    "date": "2026-03-13",
-   "valueUsd": 1234.73,
-   "liquidUsd": 255.82,
+   "valueUsd": 1557.91,
+   "liquidUsd": 579.0,
    "stakedUsd": 800.88,
    "unstakingUsd": 178.04,
-   "roiPct": -32.25
+   "roiPct": -14.52
   },
   {
    "date": "2026-03-16",
-   "valueUsd": 1266.71,
-   "liquidUsd": 226.64,
+   "valueUsd": 1596.15,
+   "liquidUsd": 556.07,
    "stakedUsd": 860.7,
    "unstakingUsd": 179.38,
-   "roiPct": -30.49
+   "roiPct": -12.42
   },
   {
    "date": "2026-03-24",
-   "valueUsd": 1177.2,
-   "liquidUsd": 223.65,
+   "valueUsd": 1502.92,
+   "liquidUsd": 549.37,
    "stakedUsd": 791.6,
    "unstakingUsd": 161.96,
-   "roiPct": -35.41
+   "roiPct": -17.53
   },
   {
    "date": "2026-04-15",
-   "valueUsd": 969.37,
-   "liquidUsd": 204.6,
+   "valueUsd": 1305.31,
+   "liquidUsd": 540.55,
    "stakedUsd": 638.85,
    "unstakingUsd": 125.92,
-   "roiPct": -46.81
+   "roiPct": -28.38
   },
   {
    "date": "2026-04-17",
-   "valueUsd": 1035.96,
-   "liquidUsd": 195.01,
+   "valueUsd": 1374.85,
+   "liquidUsd": 533.89,
    "stakedUsd": 705.96,
    "unstakingUsd": 134.99,
-   "roiPct": -43.16
+   "roiPct": -24.56
   },
   {
    "date": "2026-04-27",
-   "valueUsd": 1011.6,
-   "liquidUsd": 157.9,
+   "valueUsd": 1368.29,
+   "liquidUsd": 514.59,
    "stakedUsd": 719.66,
    "unstakingUsd": 134.04,
-   "roiPct": -44.49
+   "roiPct": -24.92
   },
   {
    "date": "2026-04-29",
-   "valueUsd": 967.89,
-   "liquidUsd": 152.47,
+   "valueUsd": 1721.27,
+   "liquidUsd": 905.85,
    "stakedUsd": 687.89,
    "unstakingUsd": 127.54,
-   "roiPct": -46.89
+   "roiPct": -5.55
   },
   {
    "date": "2026-05-06",
-   "valueUsd": 974.62,
-   "liquidUsd": 134.79,
+   "valueUsd": 1743.51,
+   "liquidUsd": 903.68,
    "stakedUsd": 712.86,
    "unstakingUsd": 126.98,
-   "roiPct": -46.52
+   "roiPct": -4.33
   },
   {
    "date": "2026-05-13",
-   "valueUsd": 1014.49,
-   "liquidUsd": 147.25,
+   "valueUsd": 1779.57,
+   "liquidUsd": 912.33,
    "stakedUsd": 738.91,
    "unstakingUsd": 128.33,
-   "roiPct": -44.33
+   "roiPct": -2.35
   },
   {
    "date": "2026-05-16",
-   "valueUsd": 961.27,
-   "liquidUsd": 116.8,
+   "valueUsd": 1722.01,
+   "liquidUsd": 877.54,
    "stakedUsd": 722.75,
    "unstakingUsd": 121.72,
-   "roiPct": -47.25
+   "roiPct": -5.51
   },
   {
    "date": "2026-06-14",
-   "valueUsd": 623.67,
-   "liquidUsd": 70.06,
+   "valueUsd": 1341.16,
+   "liquidUsd": 787.56,
    "stakedUsd": 484.15,
    "unstakingUsd": 69.46,
-   "roiPct": -65.78
+   "roiPct": -26.41
   },
   {
    "date": "2026-07-23",
-   "valueUsd": 640.69,
-   "liquidUsd": 78.51,
+   "valueUsd": 1361.71,
+   "liquidUsd": 799.54,
    "stakedUsd": 496.86,
    "unstakingUsd": 65.31,
-   "roiPct": -64.84
+   "roiPct": -25.28
   },
   {
    "date": "2026-07-30",
-   "valueUsd": 587.35,
-   "liquidUsd": 74.0,
+   "valueUsd": 1301.69,
+   "liquidUsd": 788.33,
    "stakedUsd": 456.49,
    "unstakingUsd": 56.87,
-   "roiPct": -67.77
+   "roiPct": -28.57
   },
   {
    "date": "2026-08-07",
-   "valueUsd": 580.37,
-   "liquidUsd": 72.36,
+   "valueUsd": 1295.17,
+   "liquidUsd": 787.17,
    "stakedUsd": 451.6,
    "unstakingUsd": 56.41,
-   "roiPct": -68.15
+   "roiPct": -28.93
   },
   {
    "date": "2026-08-08",
-   "valueUsd": 685.55,
-   "liquidUsd": 170.75,
+   "valueUsd": 1302.3,
+   "liquidUsd": 787.5,
    "stakedUsd": 457.65,
    "unstakingUsd": 57.16,
-   "roiPct": -62.38
+   "roiPct": -28.54
   },
   {
    "date": "2026-08-10",
-   "valueUsd": 719.57,
-   "liquidUsd": 173.57,
+   "valueUsd": 1336.36,
+   "liquidUsd": 790.36,
    "stakedUsd": 484.19,
    "unstakingUsd": 61.81,
-   "roiPct": -60.52
+   "roiPct": -26.67
   },
   {
    "date": "2026-08-14",
-   "valueUsd": 694.14,
-   "liquidUsd": 173.38,
+   "valueUsd": 1306.29,
+   "liquidUsd": 785.53,
    "stakedUsd": 466.26,
    "unstakingUsd": 54.5,
-   "roiPct": -61.91
+   "roiPct": -28.32
   },
   {
    "date": "2026-08-23",
-   "valueUsd": 823.09,
-   "liquidUsd": 213.2,
+   "valueUsd": 1345.38,
+   "liquidUsd": 735.49,
    "stakedUsd": 548.93,
    "unstakingUsd": 60.97,
-   "roiPct": -54.84
+   "roiPct": -26.18
   },
   {
    "date": "2026-08-28",
-   "valueUsd": 1015.05,
-   "liquidUsd": 247.75,
+   "valueUsd": 1547.41,
+   "liquidUsd": 780.11,
    "stakedUsd": 686.66,
    "unstakingUsd": 80.63,
-   "roiPct": -44.3
+   "roiPct": -15.09
   },
   {
    "date": "2026-08-30",
-   "valueUsd": 1027.05,
-   "liquidUsd": 239.62,
+   "valueUsd": 1552.69,
+   "liquidUsd": 765.26,
    "stakedUsd": 585.65,
    "unstakingUsd": 201.78,
-   "roiPct": -43.64
+   "roiPct": -14.8
   },
   {
    "date": "2026-08-31",
-   "valueUsd": 1757.91,
-   "liquidUsd": 233.82,
-   "stakedUsd": 383.39,
-   "unstakingUsd": 1140.7,
-   "roiPct": -3.54
+   "valueUsd": 2361.39,
+   "liquidUsd": 830.38,
+   "stakedUsd": 383.76,
+   "unstakingUsd": 1147.25,
+   "roiPct": 29.57
   }
  ]
 }
