@@ -7,6 +7,7 @@ Public-facing dashboards and apps built by [Pondiki 🐭](https://github.com/jma
 | App | Description | Stack | Deploy |
 |-----|-------------|-------|--------|
 | [Cough & Spit Tracker](./cough-spit-tracker/) | Symptom frequency tracker with trend chart | Next.js + Tailwind + Canvas | Vercel |
+| [Seeker Dashboard](./seeker-dashboard/) | Solana seeker wallet portfolio (balances, prices, allocation) | Next.js + Tailwind + Solana RPC/DexScreener/Jupiter | Vercel |
 
 ## Deploy
 
