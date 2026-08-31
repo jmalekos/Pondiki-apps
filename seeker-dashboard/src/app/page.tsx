@@ -134,8 +134,24 @@ export default function Home() {
             </section>
 
             {/* summary cards */}
+            <section className="rounded-xl border border-amber-300/25 bg-gradient-to-br from-amber-300/[0.08] to-transparent p-5">
+              <div className="flex flex-wrap items-end justify-between gap-4">
+                <div>
+                  <div className="text-[11px] uppercase tracking-[0.18em] text-stone-500">Total Portfolio (incl. staked)</div>
+                  <div className="mt-1 font-mono text-4xl font-semibold tabular-nums text-amber-300">{fmtUsd(data.totalWithUnstakingUsd)}</div>
+                  <div className="mt-1 font-mono text-[11px] text-stone-500">
+                    liquid {fmtUsd(data.totalUsd)} · staked {fmtUsd(data.stakingTotalUsd)} · unstaking {fmtUsd(data.unstakingUsd)}
+                  </div>
+                </div>
+                <div className="text-right">
+                  <div className="text-[11px] uppercase tracking-[0.18em] text-stone-500">excl. unstaking</div>
+                  <div className="mt-1 font-mono text-xl font-semibold tabular-nums text-stone-100">{fmtUsd(data.totalWithStakingUsd)}</div>
+                </div>
+              </div>
+            </section>
+
             <section className="grid grid-cols-2 lg:grid-cols-4 gap-3">
-              <Card label="Total Value" big={fmtUsd(data.totalUsd)} accent />
+              <Card label="Liquid Value" big={fmtUsd(data.totalUsd)} sub="wallet balances" />
               <Card label="24h Δ (weighted)" big={fmtPct(data.weightedChange24h)} sub={data.weightedChange24h == null ? "no price history" : undefined} tone={data.weightedChange24h != null ? (data.weightedChange24h >= 0 ? "up" : "down") : "flat"} />
               <Card label="SOL" big={`${fmtNum(data.solBalance)} ◎`} sub={fmtUsd(data.solValueUsd)} />
               <Card label="Stablecoins" big={fmtUsd(data.stableValueUsd)} sub="USDC + USDT" />

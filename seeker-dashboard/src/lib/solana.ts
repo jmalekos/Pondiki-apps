@@ -68,6 +68,10 @@ export interface Portfolio {
   holdings: Holding[];
   unpricedCount: number;
   staking: StakingInfo | null;
+  stakingTotalUsd: number;
+  unstakingUsd: number;
+  totalWithStakingUsd: number;
+  totalWithUnstakingUsd: number;
 }
 
 const RPC = "https://api.mainnet-beta.solana.com";
@@ -83,7 +87,8 @@ const STAKE_PROG = "Stake11111111111111111111111111111111111111";
 const SKR_MINT = "SKRbvo6Gf7GondiT3BbTfuRDPqLWei4j2Qy2NPGZhW3";
 const SKR_STAKING_PROG = "SKRskrmtL83pcL4YqLWt6iPefDqwXQWHSw9S9vz94BZ";
 const SKR_APY_BASE = 15; // SKR staking APY per Seeker (Cretan, 2026-08-31)
-const SKR_UNSTAKING = 30_000; // SKR in unstaking cooldown (Cretan, 2026-08-31)
+// SKR in unstaking cooldown: two on-chain unstake requests 26,516.37 + 13,270.25 = 39,786.61 (Cretan confirmed 2026-08-31)
+const SKR_UNSTAKING = 39_786.61;
 const DEACT_MAX = BigInt("0xFFFFFFFFFFFFFFFF");
 
 const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
@@ -422,6 +427,10 @@ export async function getPortfolio(force = false): Promise<Portfolio> {
 
   // ---- staking ----
   let staking: StakingInfo | null = null;
+  let stakingTotalUsd = 0;
+  let unstakingUsd = 0;
+  let totalWithStakingUsd = totalUsd;
+  let totalWithUnstakingUsd = totalUsd;
   try {
     const { totalStakedSol, voteIdentity, accounts } = await fetchStakeAccounts();
     const solPrice = holdings.find((h) => h.mint === SOL_MINT)?.priceUsd ?? null;
@@ -465,6 +474,11 @@ export async function getPortfolio(force = false): Promise<Portfolio> {
       accounts,
       validator,
     };
+    const skrPrice = skrHolding?.priceUsd ?? 0;
+    stakingTotalUsd = positions.reduce((s, p) => s + p.usdTotal, 0);
+    unstakingUsd = SKR_UNSTAKING * skrPrice;
+    totalWithStakingUsd = totalUsd + stakingTotalUsd;
+    totalWithUnstakingUsd = totalWithStakingUsd + unstakingUsd;
   } catch (e) {
     console.error("staking fetch failed:", e);
   }
@@ -480,6 +494,10 @@ export async function getPortfolio(force = false): Promise<Portfolio> {
     holdings,
     unpricedCount: holdings.filter((h) => h.valueUsd == null).length,
     staking,
+    stakingTotalUsd,
+    unstakingUsd,
+    totalWithStakingUsd,
+    totalWithUnstakingUsd,
   };
   cache = { data, at: Date.now() };
   return data;
