@@ -158,31 +158,36 @@ export default function Home() {
 
                 <section>
                   <h2 className="mb-2 text-[11px] font-semibold tracking-[0.2em] text-stone-500 uppercase">
-                    Stake Accounts · {data.staking.accounts.length}
+                    Staked Positions
                   </h2>
                   <div className="overflow-x-auto rounded-xl border border-white/5 bg-white/[0.02]">
-                    <table className="w-full min-w-[560px] text-sm">
+                    <table className="w-full min-w-[480px] text-sm">
                       <thead>
                         <tr className="border-b border-white/5 text-left text-[11px] uppercase tracking-wider text-stone-500">
-                          <th className="px-4 py-3">Account</th>
-                          <th className="px-4 py-3 text-right">Staked</th>
-                          <th className="px-4 py-3 text-right">Value</th>
-                          <th className="px-4 py-3">State</th>
-                          <th className="px-4 py-3 text-right">Act. Epoch</th>
+                          <th className="px-4 py-3">Token</th>
+                          <th className="px-4 py-3 text-right">QTY</th>
+                          <th className="px-4 py-3 text-right">USD Total</th>
+                          <th className="px-4 py-3 text-right">APY</th>
                         </tr>
                       </thead>
                       <tbody className="divide-y divide-white/5">
-                        {data.staking.accounts.map((a) => (
-                          <tr key={a.pubkey} className="hover:bg-white/[0.03] transition-colors">
-                            <td className="px-4 py-3 font-mono text-[12px] text-stone-400">{a.pubkey.slice(0, 4)}…{a.pubkey.slice(-4)}</td>
-                            <td className="px-4 py-3 text-right font-mono text-stone-200">{a.stakedSol.toFixed(4)} ◎</td>
-                            <td className="px-4 py-3 text-right font-mono text-stone-400">{fmtUsd(a.stakedSol * (data.staking!.totalStakedUsd / data.staking!.totalStakedSol))}</td>
+                        {data.staking.positions.map((p) => (
+                          <tr key={p.symbol} className="hover:bg-white/[0.03] transition-colors">
                             <td className="px-4 py-3">
-                              <span className={`rounded-full px-2 py-0.5 text-[11px] font-medium ${a.state === "stake" ? "bg-emerald-400/10 text-emerald-400" : "bg-amber-400/10 text-amber-300"}`}>
-                                {a.state}
-                              </span>
+                              <div className="flex items-center gap-2">
+                                <span className={`inline-block h-2 w-2 rounded-full ${p.symbol === "SOL" ? "bg-amber-300" : "bg-emerald-400"}`} />
+                                <div>
+                                  <div className="font-medium text-stone-100">{p.symbol}</div>
+                                  <div className="text-[11px] text-stone-500">{p.name}</div>
+                                </div>
+                              </div>
                             </td>
-                            <td className="px-4 py-3 text-right font-mono text-[12px] text-stone-500">{a.activationEpoch}</td>
+                            <td className="px-4 py-3 text-right font-mono text-stone-200">{p.qty.toLocaleString("en-US", { maximumFractionDigits: 4 })}</td>
+                            <td className="px-4 py-3 text-right font-mono text-stone-100">{fmtUsd(p.usdTotal)}</td>
+                            <td className="px-4 py-3 text-right font-mono text-stone-200">
+                              {p.apy != null ? `${p.apy.toFixed(2)}%` : "—"}
+                              {p.apyNote && <div className="text-[10px] font-normal text-stone-500">{p.apyNote}</div>}
+                            </td>
                           </tr>
                         ))}
                       </tbody>

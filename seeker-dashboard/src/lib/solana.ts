@@ -37,11 +37,21 @@ export interface ValidatorInfo {
   isJito: boolean;
 }
 
+export interface StakedPosition {
+  symbol: string;
+  name: string;
+  qty: number;
+  usdTotal: number;
+  apy: number | null;
+  apyNote?: string;
+}
+
 export interface StakingInfo {
   totalStakedSol: number;
   totalStakedUsd: number;
   annualYieldUsd: number | null;
   dailyYieldUsd: number | null;
+  positions: StakedPosition[];
   accounts: StakeAccount[];
   validator: ValidatorInfo | null;
 }
@@ -69,6 +79,8 @@ const SOL_MINT = "So11111111111111111111111111111111111111112";
 const SPL_PROG = "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA";
 const TOKEN2022_PROG = "TokenzQdBNbLqP5VEhdkAS6EPFLC1PHnBqCXEpPxuEb";
 const STAKE_PROG = "Stake11111111111111111111111111111111111111";
+const SKR_MINT = "SKRbvo6Gf7GondiT3BbTfuRDPqLWei4j2Qy2NPGZhW3";
+const SKR_APY_BASE = 24; // documented base SKR staking APY (inflation-based, varies)
 const DEACT_MAX = BigInt("0xFFFFFFFFFFFFFFFF");
 
 const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
@@ -385,11 +397,30 @@ export async function getPortfolio(force = false): Promise<Portfolio> {
       validator?.totalApy != null && solPrice != null
         ? (totalStakedSol * validator.totalApy * solPrice) / 100
         : null;
+    const skrHolding = holdings.find((h) => h.mint === SKR_MINT);
+    const positions: StakedPosition[] = [
+      {
+        symbol: "SOL",
+        name: "Solana (native)",
+        qty: totalStakedSol,
+        usdTotal: totalStakedUsd,
+        apy: validator?.totalApy ?? null,
+      },
+      {
+        symbol: "SKR",
+        name: "Seeker",
+        qty: skrHolding?.amount ?? 0,
+        usdTotal: skrHolding?.valueUsd ?? 0,
+        apy: skrHolding ? SKR_APY_BASE : null,
+        apyNote: "base est. (inflation-based)",
+      },
+    ];
     staking = {
       totalStakedSol,
       totalStakedUsd,
       annualYieldUsd,
       dailyYieldUsd: annualYieldUsd != null ? annualYieldUsd / 365 : null,
+      positions,
       accounts,
       validator,
     };
