@@ -1,4 +1,5 @@
 // Solana portfolio data layer: balances via public RPC, prices via DexScreener + Jupiter swap API.
+// Staking: native stake accounts via RPC getProgramAccounts, validator APY via Stakewiz (free).
 // No API keys. In-process cache with TTL to respect rate limits.
 
 export interface Holding {
@@ -18,6 +19,33 @@ export interface Holding {
   note?: string;
 }
 
+export interface StakeAccount {
+  pubkey: string;
+  stakedSol: number;
+  state: "stake" | "deactivating" | "other";
+  activationEpoch: number;
+  deactivationEpoch: number | null;
+}
+
+export interface ValidatorInfo {
+  voteIdentity: string;
+  name: string;
+  totalApy: number | null;
+  stakingApy: number | null;
+  jitoApy: number | null;
+  commission: number | null;
+  isJito: boolean;
+}
+
+export interface StakingInfo {
+  totalStakedSol: number;
+  totalStakedUsd: number;
+  annualYieldUsd: number | null;
+  dailyYieldUsd: number | null;
+  accounts: StakeAccount[];
+  validator: ValidatorInfo | null;
+}
+
 export interface Portfolio {
   wallet: string;
   fetchedAt: number;
@@ -28,6 +56,7 @@ export interface Portfolio {
   weightedChange24h: number | null;
   holdings: Holding[];
   unpricedCount: number;
+  staking: StakingInfo | null;
 }
 
 const RPC = "https://api.mainnet-beta.solana.com";
@@ -39,13 +68,34 @@ const USDT = "Es9vMFrzaCERmJfrF4H2FYD4KCoNkY11McCe8BenwNYB";
 const SOL_MINT = "So11111111111111111111111111111111111111112";
 const SPL_PROG = "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA";
 const TOKEN2022_PROG = "TokenzQdBNbLqP5VEhdkAS6EPFLC1PHnBqCXEpPxuEb";
+const STAKE_PROG = "Stake11111111111111111111111111111111111111";
+const DEACT_MAX = BigInt("0xFFFFFFFFFFFFFFFF");
 
 const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
 const delay = 300; // polite pacing between external calls
 
-// ---- in-process cache ----
+// ---- in-process caches ----
 let cache: { data: Portfolio; at: number } | null = null;
 const TTL_MS = 60_000;
+let stakewizCache: { data: any[]; at: number } | null = null;
+const STAKEWIZ_TTL_MS = 6 * 3600 * 1000; // validator APY changes slowly
+
+// ---- base58 (encode only, no deps) ----
+const B58 = "123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz";
+function bs58Encode(bytes: Uint8Array): string {
+  let n = BigInt(0);
+  for (const b of bytes) n = (n << BigInt(8)) | BigInt(b);
+  let s = "";
+  while (n > BigInt(0)) {
+    s = B58[Number(n % BigInt(58))] + s;
+    n /= BigInt(58);
+  }
+  for (const b of bytes) {
+    if (b === 0) s = "1" + s;
+    else break;
+  }
+  return s;
+}
 
 async function rpc(method: string, params: unknown[]): Promise<any> {
   const res = await fetch(RPC, {
@@ -147,6 +197,82 @@ async function fetchHoldings(): Promise<{
   return { solLamports: bal.value, tokens };
 }
 
+// ---- staking ----
+async function fetchStakeAccounts(): Promise<{
+  totalStakedSol: number;
+  voteIdentity: string | null;
+  accounts: StakeAccount[];
+}> {
+  const res = await fetch(RPC, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      jsonrpc: "2.0",
+      id: 1,
+      method: "getProgramAccounts",
+      params: [
+        STAKE_PROG,
+        {
+          encoding: "base64",
+          filters: [{ memcmp: { offset: 12, bytes: WALLET } }],
+        },
+      ],
+    }),
+    cache: "no-store",
+  });
+  if (!res.ok) throw new Error(`RPC getProgramAccounts failed: ${res.status}`);
+  const j = await res.json();
+  const raw: { pubkey: string; account: { data: [string, string] } }[] = j?.result ?? [];
+
+  const accounts: StakeAccount[] = [];
+  let total = 0;
+  let voteIdentity: string | null = null;
+  for (const a of raw) {
+    const data = Buffer.from(a.account.data[0], "base64");
+    if (data.length < 196) continue;
+    const variant = data.readUInt32LE(0);
+    if (variant !== 2) continue; // StakeStateV2::Stake(Meta, Stake)
+    const voter = bs58Encode(new Uint8Array(data.subarray(124, 156)));
+    const stakeLamports = Number(data.readBigUInt64LE(156));
+    const activationEpoch = Number(data.readBigUInt64LE(164));
+    const deactivationRaw = data.readBigUInt64LE(172);
+    const staked = stakeLamports / 1e9;
+    voteIdentity = voter;
+    total += staked;
+    accounts.push({
+      pubkey: a.pubkey,
+      stakedSol: staked,
+      state: deactivationRaw === DEACT_MAX ? "stake" : "deactivating",
+      activationEpoch,
+      deactivationEpoch: deactivationRaw === DEACT_MAX ? null : Number(deactivationRaw),
+    });
+  }
+  accounts.sort((a, b) => b.stakedSol - a.stakedSol);
+  return { totalStakedSol: total, voteIdentity, accounts };
+}
+
+async function fetchValidator(voteIdentity: string): Promise<ValidatorInfo | null> {
+  if (!stakewizCache || Date.now() - stakewizCache.at > STAKEWIZ_TTL_MS) {
+    try {
+      const res = await fetch("https://api.stakewiz.com/validators", { cache: "no-store" });
+      if (res.ok) stakewizCache = { data: await res.json(), at: Date.now() };
+    } catch {
+      // keep stale cache on failure
+    }
+  }
+  const v = stakewizCache?.data?.find((x) => x.vote_identity === voteIdentity);
+  if (!v) return null;
+  return {
+    voteIdentity,
+    name: v.name ?? "Unknown validator",
+    totalApy: v.total_apy ?? null,
+    stakingApy: v.staking_apy ?? null,
+    jitoApy: v.jito_apy ?? null,
+    commission: v.commission ?? null,
+    isJito: !!v.is_jito,
+  };
+}
+
 export async function getPortfolio(force = false): Promise<Portfolio> {
   if (!force && cache && Date.now() - cache.at < TTL_MS) return cache.data;
 
@@ -180,7 +306,6 @@ export async function getPortfolio(force = false): Promise<Portfolio> {
     }
 
     const tok = tokens.find((t) => t.mint === mint)!;
-    // stablecoins: fixed at $1 (verified against dex where available)
     if (mint === USDC) {
       holdings.push({
         mint, symbol: "USDC", name: "USD Coin", amount: tok.amount, decimals: tok.decimals,
@@ -198,7 +323,6 @@ export async function getPortfolio(force = false): Promise<Portfolio> {
       continue;
     }
 
-    // non-stable: DexScreener first, Jupiter quote fallback
     const px = await dexPrice(mint);
     let h: Holding;
     if (px) {
@@ -240,12 +364,38 @@ export async function getPortfolio(force = false): Promise<Portfolio> {
     .filter((h) => h.source === "stable")
     .reduce((s, h) => s + (h.valueUsd ?? 0), 0);
 
-  // weighted 24h change (only priced + non-stable with change data)
   const movers = priced.filter((h) => h.change24h != null && h.source !== "stable");
   const weightedChange24h =
     movers.length && totalUsd - stableValueUsd > 0
       ? movers.reduce((s, h) => s + h.valueUsd! * h.change24h!, 0) / (totalUsd - stableValueUsd)
       : null;
+
+  // ---- staking ----
+  let staking: StakingInfo | null = null;
+  try {
+    const { totalStakedSol, voteIdentity, accounts } = await fetchStakeAccounts();
+    const solPrice = holdings.find((h) => h.mint === SOL_MINT)?.priceUsd ?? null;
+    const totalStakedUsd = totalStakedSol * (solPrice ?? 0);
+    let validator: ValidatorInfo | null = null;
+    if (voteIdentity) {
+      validator = await fetchValidator(voteIdentity);
+      await sleep(delay);
+    }
+    const annualYieldUsd =
+      validator?.totalApy != null && solPrice != null
+        ? (totalStakedSol * validator.totalApy * solPrice) / 100
+        : null;
+    staking = {
+      totalStakedSol,
+      totalStakedUsd,
+      annualYieldUsd,
+      dailyYieldUsd: annualYieldUsd != null ? annualYieldUsd / 365 : null,
+      accounts,
+      validator,
+    };
+  } catch (e) {
+    console.error("staking fetch failed:", e);
+  }
 
   const data: Portfolio = {
     wallet: WALLET,
@@ -257,6 +407,7 @@ export async function getPortfolio(force = false): Promise<Portfolio> {
     weightedChange24h,
     holdings,
     unpricedCount: holdings.filter((h) => h.valueUsd == null).length,
+    staking,
   };
   cache = { data, at: Date.now() };
   return data;

@@ -18,6 +18,7 @@ export default function Home() {
   const [loading, setLoading] = useState(true);
   const [lastTick, setLastTick] = useState(0);
   const [copied, setCopied] = useState(false);
+  const [now, setNow] = useState(Date.now());
   const busy = useRef(false);
 
   const load = useCallback(async (force = false) => {
@@ -44,6 +45,14 @@ export default function Home() {
     const id = setInterval(() => load(false), 60_000);
     return () => clearInterval(id);
   }, [load]);
+
+  // tick for the "updated Xs ago" counter
+  useEffect(() => {
+    const id = setInterval(() => setNow(Date.now()), 5_000);
+    return () => clearInterval(id);
+  }, []);
+
+  const secondsAgo = data ? Math.max(0, Math.round((now - data.fetchedAt) / 1000)) : null;
 
   const copyWallet = async () => {
     if (!data) return;
@@ -106,6 +115,23 @@ export default function Home() {
 
         {data && (
           <>
+            {/* overview header + refresh */}
+            <section className="flex items-center justify-between gap-3">
+              <h2 className="text-[11px] font-semibold tracking-[0.2em] text-stone-500 uppercase">Overview</h2>
+              <div className="flex items-center gap-3">
+                <span className="font-mono text-[11px] text-stone-500">
+                  {secondsAgo != null ? `updated ${secondsAgo}s ago` : "—"}
+                </span>
+                <button
+                  onClick={() => load(true)}
+                  disabled={loading}
+                  className="rounded-md border border-amber-300/30 px-3 py-1.5 text-xs text-amber-300/90 hover:bg-amber-300/10 disabled:opacity-40 transition-colors"
+                >
+                  {loading ? "refreshing…" : "⟳ refresh now"}
+                </button>
+              </div>
+            </section>
+
             {/* summary cards */}
             <section className="grid grid-cols-2 lg:grid-cols-4 gap-3">
               <Card label="Total Value" big={fmtUsd(data.totalUsd)} accent />
@@ -113,6 +139,62 @@ export default function Home() {
               <Card label="SOL" big={`${fmtNum(data.solBalance)} ◎`} sub={fmtUsd(data.solValueUsd)} />
               <Card label="Stablecoins" big={fmtUsd(data.stableValueUsd)} sub="USDC + USDT" />
             </section>
+
+            {/* staking section */}
+            {data.staking && data.staking.totalStakedSol > 0 && (
+              <>
+                <section className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+                  <Card label="Staked SOL" big={`${fmtNum(data.staking.totalStakedSol)} ◎`} sub={fmtUsd(data.staking.totalStakedUsd)} accent />
+                  <Card
+                    label="Validator APY"
+                    big={data.staking.validator?.totalApy != null ? `${data.staking.validator.totalApy.toFixed(2)}%` : "—"}
+                    sub={data.staking.validator?.name ?? "unknown validator"}
+                    tone={data.staking.validator?.totalApy != null && data.staking.validator.totalApy >= 5 ? "up" : "flat"}
+                  />
+                  <Card label="Est. Annual Yield" big={fmtUsd(data.staking.annualYieldUsd)} sub={data.staking.validator?.totalApy != null ? `${((data.staking.totalStakedSol * data.staking.validator.totalApy) / 100).toFixed(3)} ◎/yr` : undefined} />
+                  <Card label="Est. Daily Yield" big={fmtUsd(data.staking.dailyYieldUsd)} sub="at current price" />
+                </section>
+
+                <section>
+                  <h2 className="mb-2 text-[11px] font-semibold tracking-[0.2em] text-stone-500 uppercase">
+                    Stake Accounts · {data.staking.accounts.length}
+                  </h2>
+                  <div className="overflow-x-auto rounded-xl border border-white/5 bg-white/[0.02]">
+                    <table className="w-full min-w-[560px] text-sm">
+                      <thead>
+                        <tr className="border-b border-white/5 text-left text-[11px] uppercase tracking-wider text-stone-500">
+                          <th className="px-4 py-3">Account</th>
+                          <th className="px-4 py-3 text-right">Staked</th>
+                          <th className="px-4 py-3 text-right">Value</th>
+                          <th className="px-4 py-3">State</th>
+                          <th className="px-4 py-3 text-right">Act. Epoch</th>
+                        </tr>
+                      </thead>
+                      <tbody className="divide-y divide-white/5">
+                        {data.staking.accounts.map((a) => (
+                          <tr key={a.pubkey} className="hover:bg-white/[0.03] transition-colors">
+                            <td className="px-4 py-3 font-mono text-[12px] text-stone-400">{a.pubkey.slice(0, 4)}…{a.pubkey.slice(-4)}</td>
+                            <td className="px-4 py-3 text-right font-mono text-stone-200">{a.stakedSol.toFixed(4)} ◎</td>
+                            <td className="px-4 py-3 text-right font-mono text-stone-400">{fmtUsd(a.stakedSol * (data.staking!.totalStakedUsd / data.staking!.totalStakedSol))}</td>
+                            <td className="px-4 py-3">
+                              <span className={`rounded-full px-2 py-0.5 text-[11px] font-medium ${a.state === "stake" ? "bg-emerald-400/10 text-emerald-400" : "bg-amber-400/10 text-amber-300"}`}>
+                                {a.state}
+                              </span>
+                            </td>
+                            <td className="px-4 py-3 text-right font-mono text-[12px] text-stone-500">{a.activationEpoch}</td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                  {data.staking.validator && (
+                    <p className="mt-2 text-[11px] text-stone-600">
+                      Validator: {data.staking.validator.name} · commission {data.staking.validator.commission ?? "?"}%{data.staking.validator.isJito ? " · Jito MEV" : ""} · staking {data.staking.validator.stakingApy?.toFixed(2)}% + MEV {data.staking.validator.jitoApy?.toFixed(2)}%
+                    </p>
+                  )}
+                </section>
+              </>
+            )}
 
             {data.unpricedCount > 0 && (
               <div className="rounded-lg border border-amber-400/25 bg-amber-400/[0.06] px-4 py-3 text-[13px] text-amber-200/90">
