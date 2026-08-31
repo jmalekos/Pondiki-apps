@@ -148,6 +148,40 @@ export default function Home() {
                   <div className="mt-1 font-mono text-xl font-semibold tabular-nums text-stone-100">{fmtUsd(data.totalWithStakingUsd)}</div>
                 </div>
               </div>
+              {/* stacked bar: liquid / staked / unstaking */}
+              <div className="mt-4">
+                <div className="flex h-3 w-full overflow-hidden rounded-full bg-white/5">
+                  <div
+                    className="bg-sky-400/80"
+                    style={{ width: `${(data.totalUsd / data.totalWithUnstakingUsd) * 100}%` }}
+                    title={`Liquid ${fmtUsd(data.totalUsd)}`}
+                  />
+                  <div
+                    className="bg-amber-300/90"
+                    style={{ width: `${(data.stakingTotalUsd / data.totalWithUnstakingUsd) * 100}%` }}
+                    title={`Staked ${fmtUsd(data.stakingTotalUsd)}`}
+                  />
+                  <div
+                    className="bg-emerald-400/80"
+                    style={{ width: `${(data.unstakingUsd / data.totalWithUnstakingUsd) * 100}%` }}
+                    title={`Unstaking ${fmtUsd(data.unstakingUsd)}`}
+                  />
+                </div>
+                <div className="mt-2 flex flex-wrap gap-x-4 gap-y-1 text-[11px] font-mono">
+                  <span className="flex items-center gap-1.5 text-stone-400">
+                    <span className="inline-block h-2 w-2 rounded-full bg-sky-400/80" />
+                    Liquid {fmtUsd(data.totalUsd)} ({(data.totalUsd / data.totalWithUnstakingUsd * 100).toFixed(1)}%)
+                  </span>
+                  <span className="flex items-center gap-1.5 text-stone-400">
+                    <span className="inline-block h-2 w-2 rounded-full bg-amber-300/90" />
+                    Staked {fmtUsd(data.stakingTotalUsd)} ({(data.stakingTotalUsd / data.totalWithUnstakingUsd * 100).toFixed(1)}%)
+                  </span>
+                  <span className="flex items-center gap-1.5 text-stone-400">
+                    <span className="inline-block h-2 w-2 rounded-full bg-emerald-400/80" />
+                    Unstaking {fmtUsd(data.unstakingUsd)} ({(data.unstakingUsd / data.totalWithUnstakingUsd * 100).toFixed(1)}%)
+                  </span>
+                </div>
+              </div>
             </section>
 
             <section className="grid grid-cols-2 lg:grid-cols-4 gap-3">
