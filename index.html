@@ -218,13 +218,13 @@ async function refresh() {
   const btn = document.getElementById("refresh-btn");
   btn.disabled = true; btn.textContent = "⟳ refreshing…";
   const [btc, seeker] = await Promise.all([
-    fetch("https://api.binance.com/api/v3/ticker/24hr?symbol=BTCUSDT").then(r => r.ok ? r.json() : null).catch(() => null),
+    fetch("https://api.coingecko.com/api/v3/simple/price?ids=bitcoin&vs_currencies=usd&include_24hr_change=true").then(r => r.ok ? r.json() : null).catch(() => null),
     fetch("https://seeker-dashboard.vercel.app/api/portfolio").then(r => r.ok ? r.json() : null).catch(() => null),
   ]);
   const btcEl = document.getElementById("btc-live");
-  if (btc && btc.lastPrice) {
-    const chg = parseFloat(btc.priceChangePercent || 0);
-    btcEl.textContent = fmtUsd(parseFloat(btc.lastPrice)) + (chg >= 0 ? " +" : " ") + chg.toFixed(2) + "%";
+  if (btc && btc.bitcoin && btc.bitcoin.usd != null) {
+    const chg = btc.bitcoin.usd_24h_change ?? 0;
+    btcEl.textContent = fmtUsd(btc.bitcoin.usd) + (chg >= 0 ? " +" : " ") + chg.toFixed(2) + "%";
     btcEl.className = "live " + (chg >= 0 ? "live-up" : "live-down");
   } else btcEl.textContent = "—";
   const skEl = document.getElementById("seeker-live");
