@@ -155,20 +155,6 @@ export default function Home() {
               </button>
             )}
           </div>
-          <div className="flex items-center gap-3 text-xs text-stone-500">
-            <span>
-              {data
-                ? `updated ${new Date(data.fetchedAt).toLocaleTimeString("en-US", { hour12: false })}`
-                : "loading…"}
-            </span>
-            <button
-              onClick={() => load(true)}
-              disabled={loading}
-              className="rounded-md border border-amber-300/30 px-3 py-1.5 text-amber-300/90 hover:bg-amber-300/10 disabled:opacity-40 transition-colors"
-            >
-              {loading ? "…" : "⟳ refresh"}
-            </button>
-          </div>
         </div>
       </header>
 
