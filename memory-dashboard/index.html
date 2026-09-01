@@ -106,7 +106,249 @@ canvas { max-width: 100%; }
   <a href="https://github.com/jmalekos/Pondiki-apps">GitHub</a>
 </div>
 <script>
-const DATA = {"timestamp": "2026-08-08T10:14:33.669619", "layers": {"atoms": {"count": 5, "by_type": {"infrastructure": 1, "people": 2, "preference": 2}, "by_tag": {"memory-system": 2, "people": 2, "hotels": 2, "lessons": 2, "pricing": 2, "architecture": 1, "decisions": 1, "dietary": 1, "contact": 1}, "oldest": "2026-08-07T23:14:40.409652", "newest": "2026-08-07T23:14:51.135143", "hours_since_last": 11.0}, "scenarios": {"count": 12, "topics": [{"topic": "people", "last_updated": "2026-08-07T23:15:00.791863", "days_since_update": 0.5, "size_kb": 0.26}, {"topic": "hotels", "last_updated": "2026-08-07T23:15:00.498384", "days_since_update": 0.5, "size_kb": 0.43}, {"topic": "memory-system", "last_updated": "2026-08-07T23:15:01.086028", "days_since_update": 0.5, "size_kb": 0.47}, {"topic": "claude-fable-5-prompting", "last_updated": "2026-07-03T22:46:00.746139", "days_since_update": 35.5, "size_kb": 6.66}, {"topic": "derivatives-research", "last_updated": "2026-06-12T15:15:21.188813", "days_since_update": 56.8, "size_kb": 5.25}, {"topic": "market-sentiment", "last_updated": "2026-06-12T15:15:21.212813", "days_since_update": 56.8, "size_kb": 3.84}, {"topic": "equities-research", "last_updated": "2026-06-12T15:15:21.196813", "days_since_update": 56.8, "size_kb": 4.8}, {"topic": "deployment-rules", "last_updated": "2026-05-17T16:29:02.398662", "days_since_update": 82.7, "size_kb": 2.13}, {"topic": "infrastructure-decisions", "last_updated": "2026-03-25T22:34:11.246535", "days_since_update": 135.5, "size_kb": 6.73}, {"topic": "research-methodology", "last_updated": "2026-03-25T22:35:18.970766", "days_since_update": 135.5, "size_kb": 7.04}, {"topic": "prediction-markets", "last_updated": "2026-03-25T22:32:10.878124", "days_since_update": 135.5, "size_kb": 5.26}, {"topic": "skill-architecture", "last_updated": "2026-03-24T23:27:38.837165", "days_since_update": 136.4, "size_kb": 3.68}], "stale_topics": [{"topic": "infrastructure-decisions", "last_updated": "2026-03-25T22:34:11.246535", "days_since_update": 135.5, "size_kb": 6.73}, {"topic": "skill-architecture", "last_updated": "2026-03-24T23:27:38.837165", "days_since_update": 136.4, "size_kb": 3.68}, {"topic": "derivatives-research", "last_updated": "2026-06-12T15:15:21.188813", "days_since_update": 56.8, "size_kb": 5.25}, {"topic": "deployment-rules", "last_updated": "2026-05-17T16:29:02.398662", "days_since_update": 82.7, "size_kb": 2.13}, {"topic": "research-methodology", "last_updated": "2026-03-25T22:35:18.970766", "days_since_update": 135.5, "size_kb": 7.04}, {"topic": "market-sentiment", "last_updated": "2026-06-12T15:15:21.212813", "days_since_update": 56.8, "size_kb": 3.84}, {"topic": "claude-fable-5-prompting", "last_updated": "2026-07-03T22:46:00.746139", "days_since_update": 35.5, "size_kb": 6.66}, {"topic": "prediction-markets", "last_updated": "2026-03-25T22:32:10.878124", "days_since_update": 135.5, "size_kb": 5.26}, {"topic": "equities-research", "last_updated": "2026-06-12T15:15:21.196813", "days_since_update": 56.8, "size_kb": 4.8}]}, "skills": {"count": 1, "names": ["hotel-search"]}, "refs": {"count": 1, "total_kb": 0.17, "nodes": ["margaritaville-tonight"]}}, "coverage": {"tags_without_scenario": ["architecture", "decisions", "dietary", "lessons", "pricing", "contact"], "scenarios_without_atoms": ["infrastructure-decisions", "skill-architecture", "derivatives-research", "deployment-rules", "research-methodology", "market-sentiment", "claude-fable-5-prompting", "prediction-markets", "equities-research"], "coverage_ratio": 33.3}, "quality": {"confidence": {"min": 100, "max": 100, "avg": 100.0, "count_100pct": 5, "count_below_60": 0}, "search_sanity": {"queries_tested": 3, "results_per_query": {"hotel": 27, "memory": 66, "trade": 26}, "any_failures": false}}, "alerts": ["\u26a0\ufe0f Only 5 atoms \u2014 pyramid is thin", "\u26a0\ufe0f 6 tags have atoms but no scenario file: architecture, decisions, dietary, lessons, pricing", "\u26a0\ufe0f Coverage ratio is 33.3% \u2014 most atoms lack scenarios", "\u26a0\ufe0f All atoms have 100% confidence \u2014 may indicate overconfidence bias"]};
+const DATA = {
+ "timestamp": "2026-08-31T20:49:35.054864",
+ "layers": {
+  "atoms": {
+   "count": 10,
+   "by_type": {
+    "infrastructure": 2,
+    "people": 2,
+    "preference": 3,
+    "lessons": 3
+   },
+   "by_tag": {
+    "lessons": 5,
+    "hotels": 3,
+    "music": 3,
+    "memory-system": 2,
+    "architecture": 2,
+    "people": 2,
+    "pricing": 2,
+    "decisions": 1,
+    "dietary": 1,
+    "blacklist": 1
+   },
+   "oldest": "2026-08-07T23:14:40.409652",
+   "newest": "2026-08-31T20:49:11.554100",
+   "hours_since_last": 0.0
+  },
+  "scenarios": {
+   "count": 15,
+   "topics": [
+    {
+     "topic": "music",
+     "last_updated": "2026-08-31T20:49:35.053892",
+     "days_since_update": 0.0,
+     "size_kb": 0.72
+    },
+    {
+     "topic": "payments",
+     "last_updated": "2026-08-31T20:49:35.054835",
+     "days_since_update": 0.0,
+     "size_kb": 0.39
+    },
+    {
+     "topic": "people",
+     "last_updated": "2026-08-31T20:49:11.555637",
+     "days_since_update": 0.0,
+     "size_kb": 0.26
+    },
+    {
+     "topic": "hotels",
+     "last_updated": "2026-08-31T20:49:11.555099",
+     "days_since_update": 0.0,
+     "size_kb": 0.55
+    },
+    {
+     "topic": "lessons",
+     "last_updated": "2026-08-31T20:49:35.054404",
+     "days_since_update": 0.0,
+     "size_kb": 0.97
+    },
+    {
+     "topic": "memory-system",
+     "last_updated": "2026-08-31T20:49:11.556102",
+     "days_since_update": 0.0,
+     "size_kb": 0.47
+    },
+    {
+     "topic": "claude-fable-5-prompting",
+     "last_updated": "2026-07-03T22:46:00.746139",
+     "days_since_update": 58.9,
+     "size_kb": 6.66
+    },
+    {
+     "topic": "derivatives-research",
+     "last_updated": "2026-06-12T15:15:21.188813",
+     "days_since_update": 80.2,
+     "size_kb": 5.25
+    },
+    {
+     "topic": "market-sentiment",
+     "last_updated": "2026-06-12T15:15:21.212813",
+     "days_since_update": 80.2,
+     "size_kb": 3.84
+    },
+    {
+     "topic": "equities-research",
+     "last_updated": "2026-06-12T15:15:21.196813",
+     "days_since_update": 80.2,
+     "size_kb": 4.8
+    },
+    {
+     "topic": "deployment-rules",
+     "last_updated": "2026-05-17T16:29:02.398662",
+     "days_since_update": 106.2,
+     "size_kb": 2.13
+    },
+    {
+     "topic": "infrastructure-decisions",
+     "last_updated": "2026-03-25T22:34:11.246535",
+     "days_since_update": 158.9,
+     "size_kb": 6.73
+    },
+    {
+     "topic": "research-methodology",
+     "last_updated": "2026-03-25T22:35:18.970766",
+     "days_since_update": 158.9,
+     "size_kb": 7.04
+    },
+    {
+     "topic": "prediction-markets",
+     "last_updated": "2026-03-25T22:32:10.878124",
+     "days_since_update": 158.9,
+     "size_kb": 5.26
+    },
+    {
+     "topic": "skill-architecture",
+     "last_updated": "2026-03-24T23:27:38.837165",
+     "days_since_update": 159.9,
+     "size_kb": 3.68
+    }
+   ],
+   "stale_topics": [
+    {
+     "topic": "infrastructure-decisions",
+     "last_updated": "2026-03-25T22:34:11.246535",
+     "days_since_update": 158.9,
+     "size_kb": 6.73
+    },
+    {
+     "topic": "skill-architecture",
+     "last_updated": "2026-03-24T23:27:38.837165",
+     "days_since_update": 159.9,
+     "size_kb": 3.68
+    },
+    {
+     "topic": "derivatives-research",
+     "last_updated": "2026-06-12T15:15:21.188813",
+     "days_since_update": 80.2,
+     "size_kb": 5.25
+    },
+    {
+     "topic": "deployment-rules",
+     "last_updated": "2026-05-17T16:29:02.398662",
+     "days_since_update": 106.2,
+     "size_kb": 2.13
+    },
+    {
+     "topic": "research-methodology",
+     "last_updated": "2026-03-25T22:35:18.970766",
+     "days_since_update": 158.9,
+     "size_kb": 7.04
+    },
+    {
+     "topic": "market-sentiment",
+     "last_updated": "2026-06-12T15:15:21.212813",
+     "days_since_update": 80.2,
+     "size_kb": 3.84
+    },
+    {
+     "topic": "claude-fable-5-prompting",
+     "last_updated": "2026-07-03T22:46:00.746139",
+     "days_since_update": 58.9,
+     "size_kb": 6.66
+    },
+    {
+     "topic": "prediction-markets",
+     "last_updated": "2026-03-25T22:32:10.878124",
+     "days_since_update": 158.9,
+     "size_kb": 5.26
+    },
+    {
+     "topic": "equities-research",
+     "last_updated": "2026-06-12T15:15:21.196813",
+     "days_since_update": 80.2,
+     "size_kb": 4.8
+    }
+   ]
+  },
+  "skills": {
+   "count": 1,
+   "names": [
+    "hotel-search"
+   ]
+  },
+  "refs": {
+   "count": 1,
+   "total_kb": 0.17,
+   "nodes": [
+    "margaritaville-tonight"
+   ]
+  }
+ },
+ "coverage": {
+  "tags_without_scenario": [
+   "architecture",
+   "decisions",
+   "dietary",
+   "pricing",
+   "blacklist",
+   "album",
+   "release",
+   "contact",
+   "farcaster",
+   "songwriting",
+   "x402",
+   "agents"
+  ],
+  "scenarios_without_atoms": [
+   "infrastructure-decisions",
+   "skill-architecture",
+   "derivatives-research",
+   "deployment-rules",
+   "research-methodology",
+   "market-sentiment",
+   "claude-fable-5-prompting",
+   "prediction-markets",
+   "equities-research"
+  ],
+  "coverage_ratio": 33.3
+ },
+ "quality": {
+  "confidence": {
+   "min": 85,
+   "max": 100,
+   "avg": 96.5,
+   "count_100pct": 6,
+   "count_below_60": 0
+  },
+  "search_sanity": {
+   "queries_tested": 3,
+   "results_per_query": {
+    "hotel": 30,
+    "memory": 83,
+    "trade": 30
+   },
+   "any_failures": false
+  }
+ },
+ "alerts": [
+  "⚠️ 12 tags have atoms but no scenario file: architecture, decisions, dietary, pricing, blacklist",
+  "⚠️ Coverage ratio is 33.3% — most atoms lack scenarios"
+ ]
+};
 
 Chart.defaults.color = '#6b7280';
 Chart.defaults.borderColor = '#1f2233';
