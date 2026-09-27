@@ -106,6 +106,24 @@ canvas { max-width: 100%; }
 }
 .portal-link:hover { color: var(--accent); }
 .loading { text-align: center; padding: 40px; color: var(--dim); font-size: 1rem; }
+
+/* Refresh button */
+.refresh-btn {
+  display: inline-flex; align-items: center; gap: 6px;
+  background: rgba(247,147,26,0.12); border: 1px solid var(--accent);
+  color: var(--accent); padding: 8px 14px; border-radius: 8px;
+  font-size: 0.85rem; font-weight: 600; cursor: pointer; font-family: inherit;
+  transition: background 0.15s;
+}
+.refresh-btn:hover { background: rgba(247,147,26,0.22); }
+.refresh-btn:disabled { opacity: 0.55; cursor: default; }
+.refresh-icon { display: inline-block; }
+.refresh-btn.loading .refresh-icon { animation: spin 0.8s linear infinite; }
+@keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+.refresh-status {
+  text-align: right; color: var(--dim); font-size: 0.7rem;
+  margin-top: -16px; margin-bottom: 12px;
+}
 </style>
 </head>
 <body>
@@ -123,8 +141,13 @@ canvas { max-width: 100%; }
   <div class="price-row">
     <span class="price" id="header-price">---</span>
     <span class="regime-badge regime-RANGE_BOUND" id="header-regime">---</span>
+    <button class="refresh-btn" id="refresh-btn" title="Re-fetch latest snapshot">
+      <span class="refresh-icon" id="refresh-icon">⟳</span> Refresh
+    </button>
   </div>
 </div>
+
+<div class="refresh-status" id="refresh-status">Auto-refresh every 60s · pipeline republishes ~5 min</div>
 
 <div class="grid kpi-row" id="kpi-row">
   <div class="loading">Loading snapshot.json...</div>
@@ -166,6 +189,9 @@ Chart.defaults.borderColor = '#1f2233';
 
 const SNAPSHOT_URL = "snapshot.json";
 const MAX_SNAPSHOT_AGE_MIN = 15;
+let priceChart = null;
+let termsChart = null;
+let lastLoadedAt = null;
 
 // ---- Field rendering ----
 function fieldStatus(f) { return f && f.status ? f.status : "missing"; }
@@ -198,15 +224,20 @@ function kpiBadge(status) {
 
 // ---- Load & Render ----
 async function load() {
+  const btn = document.getElementById("refresh-btn");
+  const icon = document.getElementById("refresh-icon");
+  if (btn) { btn.disabled = true; btn.classList.add("loading"); }
   let snap;
   try {
-    const resp = await fetch(SNAPSHOT_URL, {cache: "no-store"});
+    const url = SNAPSHOT_URL + (SNAPSHOT_URL.includes("?") ? "&" : "?") + "_=" + Date.now();
+    const resp = await fetch(url, {cache: "no-store"});
     if (!resp.ok) throw new Error("HTTP " + resp.status);
     snap = await resp.json();
   } catch(e) {
     document.getElementById("kpi-row").innerHTML = '<div class="card" style="grid-column:1/-1;text-align:center;color:var(--red)">✗ Failed to load snapshot.json: ' + e.message + '</div>';
     document.getElementById("stale-banner").className = "stale-banner critical visible";
     document.getElementById("stale-banner-text").textContent = "Cannot load snapshot.json — pipeline may be down";
+    if (btn) { btn.disabled = false; btn.classList.remove("loading"); }
     return;
   }
 
@@ -342,7 +373,8 @@ async function load() {
   if (priceHistory.length > 0) {
     const labels = priceHistory.map(p => p.date);
     const closes = priceHistory.map(p => p.close);
-    new Chart(document.getElementById('chart-price'), {
+    if (priceChart) priceChart.destroy();
+    priceChart = new Chart(document.getElementById('chart-price'), {
       type: 'line',
       data: {
         labels: labels,
@@ -369,7 +401,8 @@ async function load() {
   const optsRaw = snap.options || {};
   const ts = optsRaw.term_structure;
   if (ts && ts.front_month_iv != null && ts.back_month_iv != null) {
-    new Chart(document.getElementById('chart-terms'), {
+    if (termsChart) termsChart.destroy();
+    termsChart = new Chart(document.getElementById('chart-terms'), {
       type: 'bar',
       data: {
         labels: ['Front Month IV', 'Back Month IV'],
@@ -463,9 +496,26 @@ async function load() {
   // Footer
   document.getElementById("snapshot-source").textContent = 
     "Pi: " + (isV2 ? "self-published" : "manual") + " · schema v" + (snap._schema_version || 1);
+
+  lastLoadedAt = Date.now();
+  if (btn) { btn.disabled = false; btn.classList.remove("loading"); }
+  updateRefreshStatus();
 }
 
+function updateRefreshStatus() {
+  const el = document.getElementById("refresh-status");
+  if (!el || lastLoadedAt == null) return;
+  const s = Math.max(0, Math.round((Date.now() - lastLoadedAt) / 1000));
+  const ago = s < 60 ? s + "s ago" : Math.floor(s / 60) + "m " + (s % 60) + "s ago";
+  el.textContent = "Last refreshed " + ago + " · auto-refresh 60s · pipeline republishes ~5 min";
+}
+
+const refreshBtn = document.getElementById("refresh-btn");
+if (refreshBtn) refreshBtn.addEventListener("click", () => load());
+
 load();
+setInterval(() => { load(); }, 60000);
+setInterval(updateRefreshStatus, 10000);
 </script>
 </body>
 </html>
