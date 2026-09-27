@@ -1,99 +1,99 @@
 {
-  "generated_at": "2026-09-12T18:24:21.279650+00:00",
+  "generated_at": "2026-09-27T16:53:54.912202+00:00",
   "fields": {
     "btc_price": {
-      "value": 77195.2265625,
+      "value": 84415.15625,
       "source": "yahoo:BTC-USD",
-      "fetched_at": "2026-09-12T00:00:00+00:00",
+      "fetched_at": "2026-09-27T00:00:00+00:00",
       "ttl": 60,
       "status": "stale"
     },
     "fear_greed": {
-      "value": 63,
+      "value": 70,
       "source": "alternative.me/fng",
-      "fetched_at": "2026-09-12T18:24:21.948187+00:00",
+      "fetched_at": "2026-09-27T16:53:55.558963+00:00",
       "ttl": 21600,
       "status": "ok"
     },
     "funding_8h": {
-      "value": 9.3e-07,
+      "value": 0.0,
       "source": "deribit:BTC-PERP",
-      "fetched_at": "2026-09-12T18:24:22.182652+00:00",
+      "fetched_at": "2026-09-27T16:53:55.821328+00:00",
       "ttl": 900,
       "status": "ok"
     },
     "funding_streak_days": {
       "value": 0,
       "source": "derived:funding_streak_days(deribit:BTC-PERP)",
-      "fetched_at": "2026-09-12T18:24:21.279650+00:00",
+      "fetched_at": "2026-09-27T16:53:54.912202+00:00",
       "ttl": 900,
       "status": "ok"
     },
     "vix": {
-      "value": 17.84,
+      "value": 14.21,
       "source": "FRED:VIXCLS",
-      "fetched_at": "2026-09-12T18:24:33.548806+00:00",
+      "fetched_at": "2026-09-27T16:54:07.659395+00:00",
       "ttl": 86400,
       "status": "ok"
     },
     "ust_10y": {
-      "value": 4.95,
+      "value": 5.18,
       "source": "FRED:DGS10",
-      "fetched_at": "2026-09-12T18:24:33.548857+00:00",
+      "fetched_at": "2026-09-27T16:54:07.659421+00:00",
       "ttl": 86400,
       "status": "ok"
     },
     "fed_funds": {
       "value": 3.63,
       "source": "FRED:FEDFUNDS",
-      "fetched_at": "2026-09-12T18:24:33.548871+00:00",
+      "fetched_at": "2026-09-27T16:54:07.659431+00:00",
       "ttl": 172800,
       "status": "ok"
     }
   },
   "options": {
-    "btc_price": 77173.5,
-    "put_call_ratio": 1.575343353200311,
+    "btc_price": 84413.0,
+    "put_call_ratio": 1.4535923922794969,
     "volume_weighted_pcr": null,
     "skew": 0.0,
-    "sentiment": "Bearish (OI PCR 1.58)",
+    "sentiment": "Bearish (OI PCR 1.45)",
     "max_oi": {
       "put": {
-        "strike": 72000.0,
-        "open_interest": 2731.8,
-        "iv": 37.35
+        "strike": 80000.0,
+        "open_interest": 1394.2,
+        "iv": 34.86
       },
       "call": {
-        "strike": 72000.0,
-        "open_interest": 3311.4,
-        "iv": 37.35
+        "strike": 80000.0,
+        "open_interest": 1397.3,
+        "iv": 34.86
       }
     },
     "term_structure": {
-      "front_month_iv": 37.879999999999995,
-      "back_month_iv": 36.5,
-      "contango": -1.3799999999999955,
-      "structure": "Backwardation"
+      "front_month_iv": 35.25,
+      "back_month_iv": 36.98666666666667,
+      "contango": 1.7366666666666717,
+      "structure": "Contango"
     },
     "is_valid": true,
-    "pcr_interpretation": "Bearish",
-    "_fetched_at": "2026-09-12T18:24:21.279650+00:00"
+    "pcr_interpretation": "Neutral",
+    "_fetched_at": "2026-09-27T16:53:54.912202+00:00"
   },
   "macro": {
     "fed_funds": 3.63,
-    "treasury_10y": 4.95,
-    "vix": 17.84,
-    "yield_curve": "10Y\u20112Y spread: 0.33% (normal)",
+    "treasury_10y": 5.18,
+    "vix": 14.21,
+    "yield_curve": "10Y\u20112Y spread: 0.36% (normal)",
     "volatility_regime": "Calm",
     "curve_signal": "Normal",
-    "_fetched_at": "2026-09-12T18:24:21.279650+00:00"
+    "_fetched_at": "2026-09-27T16:53:54.912202+00:00"
   },
   "regime": {
     "final_regime": "BULL_TREND",
     "sub_regime": "low_vol",
     "confidence": 1.0,
     "details": {
-      "atr_ratio": 2.8427480228488218
+      "atr_ratio": 2.8861760818209277
     },
     "position_scalar": 1.0,
     "options_dte": 45,
@@ -102,66 +102,6 @@
     "is_fallback": false
   },
   "price_history": [
-    {
-      "date": "2026-08-13",
-      "close": 63402.171875
-    },
-    {
-      "date": "2026-08-14",
-      "close": 62975.59375
-    },
-    {
-      "date": "2026-08-15",
-      "close": 63024.3203125
-    },
-    {
-      "date": "2026-08-16",
-      "close": 62818.65234375
-    },
-    {
-      "date": "2026-08-17",
-      "close": 64506.25390625
-    },
-    {
-      "date": "2026-08-18",
-      "close": 64680.7109375
-    },
-    {
-      "date": "2026-08-19",
-      "close": 69266.1875
-    },
-    {
-      "date": "2026-08-20",
-      "close": 73032.7578125
-    },
-    {
-      "date": "2026-08-21",
-      "close": 78335.1875
-    },
-    {
-      "date": "2026-08-22",
-      "close": 77083.4140625
-    },
-    {
-      "date": "2026-08-23",
-      "close": 77755.265625
-    },
-    {
-      "date": "2026-08-24",
-      "close": 78964.484375
-    },
-    {
-      "date": "2026-08-25",
-      "close": 78564.9765625
-    },
-    {
-      "date": "2026-08-26",
-      "close": 79027.421875
-    },
-    {
-      "date": "2026-08-27",
-      "close": 80257.5390625
-    },
     {
       "date": "2026-08-28",
       "close": 77830.2890625
@@ -221,6 +161,66 @@
     {
       "date": "2026-09-11",
       "close": 77173.796875
+    },
+    {
+      "date": "2026-09-12",
+      "close": 77270.46875
+    },
+    {
+      "date": "2026-09-13",
+      "close": 76838.15625
+    },
+    {
+      "date": "2026-09-14",
+      "close": 78163.3828125
+    },
+    {
+      "date": "2026-09-15",
+      "close": 75612.5078125
+    },
+    {
+      "date": "2026-09-16",
+      "close": 76150.3203125
+    },
+    {
+      "date": "2026-09-17",
+      "close": 76403.7734375
+    },
+    {
+      "date": "2026-09-18",
+      "close": 80901.4609375
+    },
+    {
+      "date": "2026-09-19",
+      "close": 81233.6796875
+    },
+    {
+      "date": "2026-09-20",
+      "close": 81142.609375
+    },
+    {
+      "date": "2026-09-21",
+      "close": 86602.9140625
+    },
+    {
+      "date": "2026-09-22",
+      "close": 86172.28125
+    },
+    {
+      "date": "2026-09-23",
+      "close": 84383.0078125
+    },
+    {
+      "date": "2026-09-24",
+      "close": 84379.0625
+    },
+    {
+      "date": "2026-09-25",
+      "close": 84034.921875
+    },
+    {
+      "date": "2026-09-26",
+      "close": 84406.453125
     }
   ],
   "_schema_version": 2
