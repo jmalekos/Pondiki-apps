@@ -87,8 +87,6 @@ const STAKE_PROG = "Stake11111111111111111111111111111111111111";
 const SKR_MINT = "SKRbvo6Gf7GondiT3BbTfuRDPqLWei4j2Qy2NPGZhW3";
 const SKR_STAKING_PROG = "SKRskrmtL83pcL4YqLWt6iPefDqwXQWHSw9S9vz94BZ";
 const SKR_APY_BASE = 15; // SKR staking APY per Seeker (Cretan, 2026-08-31)
-// SKR in unstaking cooldown: two on-chain unstake requests 26,516.37 + 13,270.25 = 39,786.61 (Cretan confirmed 2026-08-31)
-const SKR_UNSTAKING = 39_786.61;
 const DEACT_MAX = BigInt("0xFFFFFFFFFFFFFFFF");
 
 const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
@@ -294,7 +292,7 @@ async function fetchValidator(voteIdentity: string): Promise<ValidatorInfo | nul
 }
 
 // ---- SKR staking (Solana Mobile program) ----
-async function fetchSkrStake(): Promise<{ staked: number; lifetimeStaked: number } | null> {
+async function fetchSkrStake(): Promise<{ available: number; staked: number; lifetimeStaked: number; cooldownEndTs: number } | null> {
   try {
     const res = await fetch(RPC, {
       method: "POST",
@@ -319,11 +317,19 @@ async function fetchSkrStake(): Promise<{ staked: number; lifetimeStaked: number
     if (!raw.length) return null;
     const data = Buffer.from(raw[0].account.data[0], "base64");
     // UserStake layout (bincode): disc(8) + guardian(32) + bump(1) + staker(32) + vote(32)
-    // then u64 fields @105..@161: @105 pending, @121 CURRENT STAKED, @153 LIFETIME STAKED, @161 cooldown ts
+    // then u64 fields @105..@161 (all 1e6-scaled SKR, except @161 = unix ts):
+    //   @105 = unstaked-in-program (claimable) · @121 = CURRENT STAKED · @153 = LIFETIME STAKED · @161 = cooldown end ts (0 = none)
     if (data.length < 169) return null;
+    const availableBase = Number(data.readBigUInt64LE(105));
     const stakedBase = Number(data.readBigUInt64LE(121));
     const lifetimeBase = Number(data.readBigUInt64LE(153));
-    return { staked: stakedBase / 1e6, lifetimeStaked: lifetimeBase / 1e6 };
+    const cooldownTs = Number(data.readBigUInt64LE(161));
+    return {
+      available: availableBase / 1e6,
+      staked: stakedBase / 1e6,
+      lifetimeStaked: lifetimeBase / 1e6,
+      cooldownEndTs: cooldownTs,
+    };
   } catch {
     return null;
   }
@@ -448,6 +454,7 @@ export async function getPortfolio(force = false): Promise<Portfolio> {
     const skrHolding = holdings.find((h) => h.mint === SKR_MINT);
     const skrStake = await fetchSkrStake();
     const skrStaked = skrStake?.staked ?? 0;
+    const skrAvailable = skrStake?.available ?? 0;
     const skrLifetime = skrStake?.lifetimeStaked ?? 0;
     const positions: StakedPosition[] = [
       {
@@ -460,11 +467,11 @@ export async function getPortfolio(force = false): Promise<Portfolio> {
       {
         symbol: "SKR",
         name: "Seeker",
-        qty: skrStaked,
-        usdTotal: skrStaked * (skrHolding?.priceUsd ?? 0),
+        qty: skrStaked + skrAvailable,
+        usdTotal: (skrStaked + skrAvailable) * (skrHolding?.priceUsd ?? 0),
         apy: skrStaked > 0 ? SKR_APY_BASE : null,
         apyNote: "per Seeker staking",
-        detail: `${SKR_UNSTAKING.toLocaleString()} unstaking (cooldown) · lifetime staked ${skrLifetime.toLocaleString()}`,
+        detail: `staked ${skrStaked.toLocaleString()} · unstaked ${skrAvailable.toLocaleString()} (claimable) · lifetime ${skrLifetime.toLocaleString()}`,
       },
     ];
     staking = {
@@ -478,7 +485,7 @@ export async function getPortfolio(force = false): Promise<Portfolio> {
     };
     const skrPrice = skrHolding?.priceUsd ?? 0;
     stakingTotalUsd = positions.reduce((s, p) => s + p.usdTotal, 0);
-    unstakingUsd = SKR_UNSTAKING * skrPrice;
+    unstakingUsd = 0; // cooldown completed on-chain (UserStake @161 = 0)
     totalWithStakingUsd = totalUsd + stakingTotalUsd;
     totalWithUnstakingUsd = totalWithStakingUsd + unstakingUsd;
   } catch (e) {
