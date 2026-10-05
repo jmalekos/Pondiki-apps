@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-10-05T18:11:41.815274+00:00",
+  "generated_at": "2026-10-05T18:11:50.857601+00:00",
   "fields": {
     "btc_price": {
       "value": 85374.8984375,
@@ -11,42 +11,42 @@
     "fear_greed": {
       "value": 70,
       "source": "alternative.me/fng",
-      "fetched_at": "2026-10-05T18:11:42.477840+00:00",
+      "fetched_at": "2026-10-05T18:11:51.493542+00:00",
       "ttl": 21600,
       "status": "ok"
     },
     "funding_8h": {
-      "value": 3.583e-05,
+      "value": 3.586e-05,
       "source": "deribit:BTC-PERP",
-      "fetched_at": "2026-10-05T18:11:42.738722+00:00",
+      "fetched_at": "2026-10-05T18:11:51.765575+00:00",
       "ttl": 900,
       "status": "ok"
     },
     "funding_streak_days": {
       "value": 0,
       "source": "derived:funding_streak_days(deribit:BTC-PERP)",
-      "fetched_at": "2026-10-05T18:11:41.815274+00:00",
+      "fetched_at": "2026-10-05T18:11:50.857601+00:00",
       "ttl": 900,
       "status": "ok"
     },
     "vix": {
       "value": 15.31,
       "source": "FRED:VIXCLS",
-      "fetched_at": "2026-10-05T18:11:53.931015+00:00",
+      "fetched_at": "2026-10-05T18:12:04.320106+00:00",
       "ttl": 86400,
       "status": "ok"
     },
     "ust_10y": {
       "value": 5.24,
       "source": "FRED:DGS10",
-      "fetched_at": "2026-10-05T18:11:53.931044+00:00",
+      "fetched_at": "2026-10-05T18:12:04.320132+00:00",
       "ttl": 86400,
       "status": "ok"
     },
     "fed_funds": {
       "value": 3.75,
       "source": "FRED:FEDFUNDS",
-      "fetched_at": "2026-10-05T18:11:53.931053+00:00",
+      "fetched_at": "2026-10-05T18:12:04.320141+00:00",
       "ttl": 172800,
       "status": "ok"
     }
@@ -77,7 +77,7 @@
     },
     "is_valid": true,
     "pcr_interpretation": "Bearish",
-    "_fetched_at": "2026-10-05T18:11:41.815274+00:00"
+    "_fetched_at": "2026-10-05T18:11:50.857601+00:00"
   },
   "macro": {
     "fed_funds": 3.75,
@@ -86,7 +86,7 @@
     "yield_curve": "10Y\u20112Y spread: 0.45% (normal)",
     "volatility_regime": "Calm",
     "curve_signal": "Normal",
-    "_fetched_at": "2026-10-05T18:11:41.815274+00:00"
+    "_fetched_at": "2026-10-05T18:11:50.857601+00:00"
   },
   "regime": {
     "final_regime": "BULL_TREND",
