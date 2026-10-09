@@ -11,14 +11,14 @@
     "fear_greed": {
       "value": 59,
       "source": "alternative.me/fng",
-      "fetched_at": "2026-10-09T04:19:42.585497+00:00",
+      "fetched_at": "2026-10-09T04:19:42.593690+00:00",
       "ttl": 21600,
       "status": "ok"
     },
     "funding_8h": {
       "value": 7.584e-05,
       "source": "deribit:BTC-PERP",
-      "fetched_at": "2026-10-09T04:19:42.848696+00:00",
+      "fetched_at": "2026-10-09T04:19:42.856883+00:00",
       "ttl": 900,
       "status": "ok"
     },
@@ -32,21 +32,21 @@
     "vix": {
       "value": 15.08,
       "source": "FRED:VIXCLS",
-      "fetched_at": "2026-10-09T04:19:53.838385+00:00",
+      "fetched_at": "2026-10-09T04:19:54.083445+00:00",
       "ttl": 86400,
       "status": "ok"
     },
     "ust_10y": {
       "value": 5.28,
       "source": "FRED:DGS10",
-      "fetched_at": "2026-10-09T04:19:53.838422+00:00",
+      "fetched_at": "2026-10-09T04:19:54.083479+00:00",
       "ttl": 86400,
       "status": "ok"
     },
     "fed_funds": {
       "value": 3.75,
       "source": "FRED:FEDFUNDS",
-      "fetched_at": "2026-10-09T04:19:53.838435+00:00",
+      "fetched_at": "2026-10-09T04:19:54.083488+00:00",
       "ttl": 172800,
       "status": "ok"
     }
