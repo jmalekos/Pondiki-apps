@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-10-19T15:20:41.796978+00:00",
+  "generated_at": "2026-10-19T15:20:43.795792+00:00",
   "fields": {
     "btc_price": {
       "value": 82258.578125,
@@ -11,48 +11,48 @@
     "fear_greed": {
       "value": 59,
       "source": "alternative.me/fng",
-      "fetched_at": "2026-10-19T15:20:42.541231+00:00",
+      "fetched_at": "2026-10-19T15:20:44.451008+00:00",
       "ttl": 21600,
       "status": "ok"
     },
     "funding_8h": {
       "value": 7.321e-05,
       "source": "deribit:BTC-PERP",
-      "fetched_at": "2026-10-19T15:20:42.852376+00:00",
+      "fetched_at": "2026-10-19T15:20:44.719864+00:00",
       "ttl": 900,
       "status": "ok"
     },
     "funding_streak_days": {
       "value": 0,
       "source": "derived:funding_streak_days(deribit:BTC-PERP)",
-      "fetched_at": "2026-10-19T15:20:41.796978+00:00",
+      "fetched_at": "2026-10-19T15:20:43.795792+00:00",
       "ttl": 900,
       "status": "ok"
     },
     "vix": {
       "value": 19.99,
       "source": "FRED:VIXCLS",
-      "fetched_at": "2026-10-19T15:20:55.022318+00:00",
+      "fetched_at": "2026-10-19T15:20:57.962708+00:00",
       "ttl": 86400,
       "status": "ok"
     },
     "ust_10y": {
       "value": 5.1,
       "source": "FRED:DGS10",
-      "fetched_at": "2026-10-19T15:20:55.022346+00:00",
+      "fetched_at": "2026-10-19T15:20:57.962734+00:00",
       "ttl": 86400,
       "status": "ok"
     },
     "fed_funds": {
       "value": 3.75,
       "source": "FRED:FEDFUNDS",
-      "fetched_at": "2026-10-19T15:20:55.022355+00:00",
+      "fetched_at": "2026-10-19T15:20:57.962743+00:00",
       "ttl": 172800,
       "status": "ok"
     }
   },
   "options": {
-    "btc_price": 82274.0,
+    "btc_price": 82281.5,
     "put_call_ratio": 0.8744910102081292,
     "volume_weighted_pcr": null,
     "skew": 0.0,
@@ -77,7 +77,7 @@
     },
     "is_valid": true,
     "pcr_interpretation": "Neutral",
-    "_fetched_at": "2026-10-19T15:20:41.796978+00:00"
+    "_fetched_at": "2026-10-19T15:20:43.795792+00:00"
   },
   "macro": {
     "fed_funds": 3.75,
@@ -86,7 +86,7 @@
     "yield_curve": "10Y\u20112Y spread: 0.35% (normal)",
     "volatility_regime": "Calm",
     "curve_signal": "Normal",
-    "_fetched_at": "2026-10-19T15:20:41.796978+00:00"
+    "_fetched_at": "2026-10-19T15:20:43.795792+00:00"
   },
   "regime": {
     "final_regime": "RANGE_BOUND",
