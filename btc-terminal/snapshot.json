@@ -1,8 +1,8 @@
 {
-  "generated_at": "2026-10-25T02:42:31.853596+00:00",
+  "generated_at": "2026-10-25T02:42:41.817278+00:00",
   "fields": {
     "btc_price": {
-      "value": 80865.7578125,
+      "value": 80854.0703125,
       "source": "yahoo:BTC-USD",
       "fetched_at": "2026-10-25T00:00:00+00:00",
       "ttl": 60,
@@ -11,48 +11,48 @@
     "fear_greed": {
       "value": 54,
       "source": "alternative.me/fng",
-      "fetched_at": "2026-10-25T02:42:32.495630+00:00",
+      "fetched_at": "2026-10-25T02:42:42.503605+00:00",
       "ttl": 21600,
       "status": "ok"
     },
     "funding_8h": {
       "value": 0.0,
       "source": "deribit:BTC-PERP",
-      "fetched_at": "2026-10-25T02:42:32.731365+00:00",
+      "fetched_at": "2026-10-25T02:42:42.780302+00:00",
       "ttl": 900,
       "status": "ok"
     },
     "funding_streak_days": {
       "value": 0,
       "source": "derived:funding_streak_days(deribit:BTC-PERP)",
-      "fetched_at": "2026-10-25T02:42:31.853596+00:00",
+      "fetched_at": "2026-10-25T02:42:41.817278+00:00",
       "ttl": 900,
       "status": "ok"
     },
     "vix": {
       "value": 19.03,
       "source": "FRED:VIXCLS",
-      "fetched_at": "2026-10-25T02:42:44.078663+00:00",
+      "fetched_at": "2026-10-25T02:42:54.233506+00:00",
       "ttl": 86400,
       "status": "ok"
     },
     "ust_10y": {
       "value": 4.96,
       "source": "FRED:DGS10",
-      "fetched_at": "2026-10-25T02:42:44.078701+00:00",
+      "fetched_at": "2026-10-25T02:42:54.233541+00:00",
       "ttl": 86400,
       "status": "ok"
     },
     "fed_funds": {
       "value": 3.75,
       "source": "FRED:FEDFUNDS",
-      "fetched_at": "2026-10-25T02:42:44.078713+00:00",
+      "fetched_at": "2026-10-25T02:42:54.233553+00:00",
       "ttl": 172800,
       "status": "ok"
     }
   },
   "options": {
-    "btc_price": 80871.0,
+    "btc_price": 80884.0,
     "put_call_ratio": 5.288255465066438,
     "volume_weighted_pcr": null,
     "skew": 0.0,
@@ -70,14 +70,14 @@
       }
     },
     "term_structure": {
-      "front_month_iv": 39.18,
+      "front_month_iv": 39.18666666666667,
       "back_month_iv": 38.69,
-      "contango": -0.490000000000002,
+      "contango": -0.4966666666666697,
       "structure": "Backwardation"
     },
     "is_valid": true,
     "pcr_interpretation": "Very bearish/hedged",
-    "_fetched_at": "2026-10-25T02:42:31.853596+00:00"
+    "_fetched_at": "2026-10-25T02:42:41.817278+00:00"
   },
   "macro": {
     "fed_funds": 3.75,
@@ -86,7 +86,7 @@
     "yield_curve": "10Y\u20112Y spread: 0.31% (normal)",
     "volatility_regime": "Calm",
     "curve_signal": "Normal",
-    "_fetched_at": "2026-10-25T02:42:31.853596+00:00"
+    "_fetched_at": "2026-10-25T02:42:41.817278+00:00"
   },
   "regime": {
     "final_regime": "RANGE_BOUND",
