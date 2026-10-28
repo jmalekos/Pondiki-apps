@@ -1,8 +1,8 @@
 {
-  "generated_at": "2026-10-28T22:11:32.152443+00:00",
+  "generated_at": "2026-10-28T22:11:46.843343+00:00",
   "fields": {
     "btc_price": {
-      "value": 81167.8125,
+      "value": 81180.84375,
       "source": "yahoo:BTC-USD",
       "fetched_at": "2026-10-28T00:00:00+00:00",
       "ttl": 60,
@@ -11,48 +11,48 @@
     "fear_greed": {
       "value": 51,
       "source": "alternative.me/fng",
-      "fetched_at": "2026-10-28T22:11:32.840259+00:00",
+      "fetched_at": "2026-10-28T22:11:47.498563+00:00",
       "ttl": 21600,
       "status": "ok"
     },
     "funding_8h": {
       "value": 4.049e-05,
       "source": "deribit:BTC-PERP",
-      "fetched_at": "2026-10-28T22:11:33.073432+00:00",
+      "fetched_at": "2026-10-28T22:11:47.764960+00:00",
       "ttl": 900,
       "status": "ok"
     },
     "funding_streak_days": {
       "value": 0,
       "source": "derived:funding_streak_days(deribit:BTC-PERP)",
-      "fetched_at": "2026-10-28T22:11:32.152443+00:00",
+      "fetched_at": "2026-10-28T22:11:46.843343+00:00",
       "ttl": 900,
       "status": "ok"
     },
     "vix": {
       "value": 17.52,
       "source": "FRED:VIXCLS",
-      "fetched_at": "2026-10-28T22:11:44.259114+00:00",
+      "fetched_at": "2026-10-28T22:11:58.501021+00:00",
       "ttl": 86400,
       "status": "ok"
     },
     "ust_10y": {
       "value": 4.99,
       "source": "FRED:DGS10",
-      "fetched_at": "2026-10-28T22:11:44.259148+00:00",
+      "fetched_at": "2026-10-28T22:11:58.501055+00:00",
       "ttl": 86400,
       "status": "ok"
     },
     "fed_funds": {
       "value": 3.75,
       "source": "FRED:FEDFUNDS",
-      "fetched_at": "2026-10-28T22:11:44.259161+00:00",
+      "fetched_at": "2026-10-28T22:11:58.501067+00:00",
       "ttl": 172800,
       "status": "ok"
     }
   },
   "options": {
-    "btc_price": 81195.5,
+    "btc_price": 81205.5,
     "put_call_ratio": 2.4402488784688567,
     "volume_weighted_pcr": null,
     "skew": 0.0,
@@ -77,7 +77,7 @@
     },
     "is_valid": true,
     "pcr_interpretation": "Bearish",
-    "_fetched_at": "2026-10-28T22:11:32.152443+00:00"
+    "_fetched_at": "2026-10-28T22:11:46.843343+00:00"
   },
   "macro": {
     "fed_funds": 3.75,
@@ -86,7 +86,7 @@
     "yield_curve": "10Y\u20112Y spread: 0.38% (normal)",
     "volatility_regime": "Calm",
     "curve_signal": "Normal",
-    "_fetched_at": "2026-10-28T22:11:32.152443+00:00"
+    "_fetched_at": "2026-10-28T22:11:46.843343+00:00"
   },
   "regime": {
     "final_regime": "RANGE_BOUND",
