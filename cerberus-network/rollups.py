@@ -64,6 +64,25 @@ CREATE TABLE IF NOT EXISTS roll_events (
   id INTEGER PRIMARY KEY, ts INTEGER NOT NULL,
   kind TEXT, severity TEXT, detail TEXT);
 CREATE INDEX IF NOT EXISTS idx_events_ts ON roll_events(ts);
+CREATE TABLE IF NOT EXISTS roll_flows (
+  grain INTEGER NOT NULL, bucket INTEGER NOT NULL, device_id TEXT NOT NULL,
+  dest_ip TEXT NOT NULL, app_proto TEXT NOT NULL, proto TEXT NOT NULL,
+  bytes_down INTEGER NOT NULL, bytes_up INTEGER NOT NULL, flows INTEGER NOT NULL,
+  PRIMARY KEY (grain, bucket, device_id, dest_ip, app_proto, proto)
+) WITHOUT ROWID;
+CREATE INDEX IF NOT EXISTS idx_flows_bucket ON roll_flows(bucket);
+CREATE TABLE IF NOT EXISTS roll_probes (
+  bucket INTEGER NOT NULL, target TEXT NOT NULL, kind TEXT NOT NULL,
+  ok INTEGER NOT NULL, fail INTEGER NOT NULL, avg_rtt_ms REAL,
+  last_rcode TEXT, last_error TEXT,
+  PRIMARY KEY (bucket, target, kind)
+) WITHOUT ROWID;
+CREATE INDEX IF NOT EXISTS idx_probes_bucket ON roll_probes(bucket);
+CREATE TABLE IF NOT EXISTS findings (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  ts INTEGER NOT NULL, rule TEXT NOT NULL, device_id TEXT, severity TEXT, detail TEXT
+);
+CREATE INDEX IF NOT EXISTS idx_findings_ts ON findings(ts);
 """
 
 
@@ -167,6 +186,27 @@ def roll_1m(roll, lo, hi):
     ON CONFLICT(grain,bucket) DO UPDATE SET event_count=excluded.event_count
     """, (lo, hi))
 
+    # destination + protocol flows (traffic explorer)
+    roll.execute("""
+    INSERT OR REPLACE INTO roll_flows (grain,bucket,device_id,dest_ip,app_proto,proto,bytes_down,bytes_up,flows)
+    SELECT 60, bucket,
+           CASE WHEN src_mac IS NOT NULL AND src_mac<>'' THEN src_mac
+                ELSE 'ip:'||COALESCE(NULLIF(src_ip,''),'?') END AS device_id,
+           COALESCE(NULLIF(dest_ip,''),'?'), COALESCE(NULLIF(app_proto,''),'?'),
+           COALESCE(NULLIF(proto,''),'?'),
+           SUM(bytes_toclient), SUM(bytes_toserver), SUM(flows)
+    FROM net.flow_agg WHERE bucket>? AND bucket<=? GROUP BY bucket,2,3,4,5
+    """, (lo, hi))
+
+    # per-target probe detail (connectivity diagnostics)
+    roll.execute("""
+    INSERT OR REPLACE INTO roll_probes (bucket,target,kind,ok,fail,avg_rtt_ms,last_rcode,last_error)
+    SELECT (ts/60)*60, COALESCE(NULLIF(target,''),'?'), COALESCE(NULLIF(kind,''),'?'),
+           SUM(CASE WHEN ok=1 THEN 1 ELSE 0 END), SUM(CASE WHEN ok=0 THEN 1 ELSE 0 END),
+           AVG(rtt_ms), COALESCE(NULLIF(MAX(rcode),''),'?'), COALESCE(NULLIF(MAX(error),''),'?')
+    FROM net.probes WHERE ts>? AND ts<=? GROUP BY 1,2,3
+    """, (lo, hi))
+
     # local findings (Suricata anomalies + probe events)
     roll.execute("""
     INSERT OR REPLACE INTO roll_events (id, ts, kind, severity, detail)
@@ -201,14 +241,73 @@ def roll_grain(roll, grain, lo_aligned):
            MAX(flow_active), MAX(uptime), SUM(probe_ok), SUM(probe_fail), SUM(event_count)
     FROM roll_health WHERE grain=60 AND bucket>=? GROUP BY 2
     """, (grain, step, step, lo_aligned))
+    roll.execute("""
+    INSERT OR REPLACE INTO roll_flows (grain,bucket,device_id,dest_ip,app_proto,proto,bytes_down,bytes_up,flows)
+    SELECT ?, (bucket/?)*?, device_id, dest_ip, app_proto, proto, SUM(bytes_down), SUM(bytes_up), SUM(flows)
+    FROM roll_flows WHERE grain=60 AND bucket>=? GROUP BY 2,3,4,5,6
+    """, (grain, step, step, lo_aligned))
 
 
 def prune(roll, now):
     for grain, keep in RETENTION.items():
         cutoff = now - keep
-        for t in ("roll_talkers", "roll_dns", "roll_tls", "roll_health"):
+        for t in ("roll_talkers", "roll_dns", "roll_tls", "roll_health", "roll_flows"):
             roll.execute("DELETE FROM %s WHERE grain=? AND bucket<?" % t, (grain, cutoff))
     roll.execute("DELETE FROM roll_events WHERE ts < ?", (now - 90 * 86400,))
+    roll.execute("DELETE FROM roll_probes WHERE bucket < ?", (now - 30 * 86400,))
+    roll.execute("DELETE FROM findings WHERE ts < ?", (now - 30 * 86400,))
+
+
+def compute_findings(roll, now):
+    """Deterministic findings engine. Recompute the last 30 days (idempotent).
+    Rules are versioned and explainable; each row carries evidence in detail."""
+    roll.execute("DELETE FROM findings WHERE ts >= ?", (now - 30 * 86400,))
+    cutoff = now - 7 * 86400
+
+    # Rule new_device: device first observed within the last 24h.
+    # (A 7-day window during initial baseline import would flag every device
+    #  as "new"; the 24h window avoids that flood until a baseline exists.)
+    for mac, ip, host, vendor, first_seen in roll.execute(
+            "SELECT mac, ip, hostname, vendor, first_seen FROM device_dir "
+            "WHERE first_seen >= ?", (now - 86400,)):
+        roll.execute("INSERT INTO findings(ts,rule,device_id,severity,detail) VALUES(?,?,?,?,?)",
+                     (first_seen, "new_device", mac, "info",
+                      json.dumps({"mac": mac, "ip": ip, "vendor": vendor})))
+
+    # Rule unusual_volume: hourly total > 5x device median (>= 2 GB floor)
+    rows = roll.execute(
+        "SELECT device_id, bucket, SUM(bytes) AS t FROM roll_talkers "
+        "WHERE grain=3600 AND bucket>=? GROUP BY device_id, bucket", (now - 7 * 86400,)).fetchall()
+    by_dev = {}
+    for device_id, bucket, t in rows:
+        by_dev.setdefault(device_id, []).append((bucket, t))
+    for device_id, series in by_dev.items():
+        if len(series) < 8:
+            continue
+        vals = sorted(t for _, t in series)
+        median = vals[len(vals) // 2]
+        if median < 100 * 1024 * 1024:  # ignore quiet devices
+            continue
+        thr = max(median * 5, 2 * 1024 ** 3)
+        for bucket, t in series:
+            if t > thr:
+                roll.execute("INSERT INTO findings(ts,rule,device_id,severity,detail) VALUES(?,?,?,?,?)",
+                             (bucket, "unusual_volume", device_id, "warning",
+                              json.dumps({"bytes": t, "median_hourly": median,
+                                          "threshold": thr, "rule_version": 1})))
+
+    # Rule dns_failure: hourly DNS failure rate > 20% with >= 50 queries
+    rows = roll.execute(
+        "SELECT src_ip, bucket, SUM(count) AS total, "
+        "SUM(CASE WHEN rcode IN ('SERVFAIL','REFUSED','FORMERR','NOTIMP') THEN count ELSE 0 END) AS fails "
+        "FROM roll_dns WHERE grain=3600 AND bucket>=? GROUP BY src_ip, bucket",
+        (now - 7 * 86400,)).fetchall()
+    for src_ip, bucket, total, fails in rows:
+        if total >= 50 and fails / total > 0.20:
+            roll.execute("INSERT INTO findings(ts,rule,device_id,severity,detail) VALUES(?,?,?,?,?)",
+                         (bucket, "dns_failure", "ip:" + src_ip, "warning",
+                          json.dumps({"queries": total, "failures": fails,
+                                      "rate": round(fails / total, 3), "rule_version": 1})))
 
 
 def do_rollup(net_path, roll_path):
@@ -232,6 +331,7 @@ def do_rollup(net_path, roll_path):
         roll_grain(roll, 300, (base // 300) * 300)
         roll_grain(roll, 3600, (base // 3600) * 3600)
         rebuild_device_dir(roll)
+        compute_findings(roll, now)
         prune(roll, now)
         roll.commit()
         set_meta(roll, "last_1m_bucket", str(hi))
@@ -272,12 +372,13 @@ def do_status(roll_path):
     roll = open_ro(roll_path)
     try:
         out = {"rollups_db": roll_path}
-        for t in ("roll_talkers", "roll_dns", "roll_tls", "roll_health"):
+        for t in ("roll_talkers", "roll_dns", "roll_tls", "roll_health", "roll_flows", "roll_probes"):
             out[t] = roll.execute("SELECT COUNT(*) FROM %s" % t).fetchone()[0]
         out["last_1m_bucket"] = get_meta(roll, "last_1m_bucket")
         out["last_run"] = get_meta(roll, "last_run")
         out["devices"] = roll.execute("SELECT COUNT(*) FROM device_dir").fetchone()[0]
         out["events"] = roll.execute("SELECT COUNT(*) FROM roll_events").fetchone()[0]
+        out["findings"] = roll.execute("SELECT COUNT(*) FROM findings").fetchone()[0]
         print(json.dumps(out, indent=2))
     finally:
         roll.close()

@@ -6,340 +6,245 @@
 <title>Network — Cerberus</title>
 <style>
   :root {
-    --bg: #0e1013;
-    --panel: #15181d;
-    --panel-2: #1a1e24;
-    --border: #262b33;
-    --text: #e6e9ef;
-    --muted: #8a93a3;
-    --cyan: #4fd1c5;
-    --violet: #a78bfa;
-    --teal: #2dd4bf;
-    --amber: #f59e0b;
-    --red: #f87171;
-    --green: #34d399;
-    --mono: ui-monospace, SFMono-Regular, "SF Mono", Menlo, monospace;
+    --bg:#0e1013; --panel:#15181d; --panel2:#1a1e24; --border:#262b33;
+    --text:#e6e9ef; --muted:#8a93a3; --cyan:#4fd1c5; --violet:#a78bfa;
+    --teal:#2dd4bf; --amber:#f59e0b; --red:#f87171; --green:#34d399;
+    --mono:ui-monospace,SFMono-Regular,"SF Mono",Menlo,monospace;
   }
-  * { box-sizing: border-box; }
-  body {
-    margin: 0; background: var(--bg); color: var(--text);
-    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-    font-size: 14px; line-height: 1.5;
-    -webkit-font-smoothing: antialiased;
-  }
-  a { color: var(--cyan); text-decoration: none; }
-  .wrap { max-width: 1180px; margin: 0 auto; padding: 24px 20px 64px; }
-  header { display: flex; align-items: center; gap: 16px; flex-wrap: wrap; margin-bottom: 20px; }
-  h1 { font-size: 20px; font-weight: 650; margin: 0; letter-spacing: -0.01em; }
-  .sub { color: var(--muted); font-size: 13px; }
-  .spacer { flex: 1; }
-  .pill {
-    display: inline-flex; align-items: center; gap: 7px; padding: 5px 12px;
-    border-radius: 999px; font-size: 12px; font-weight: 600; border: 1px solid var(--border);
-    background: var(--panel-2);
-  }
-  .pill .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--muted); }
-  .pill.live { color: var(--green); } .pill.live .dot { background: var(--green); }
-  .pill.delayed { color: var(--amber); } .pill.delayed .dot { background: var(--amber); }
-  .pill.stale { color: var(--amber); } .pill.stale .dot { background: var(--amber); }
-  .pill.paused { color: var(--amber); } .pill.paused .dot { background: var(--amber); }
-  .pill.unreachable { color: var(--red); } .pill.unreachable .dot { background: var(--red); }
-
-  .range { display: inline-flex; border: 1px solid var(--border); border-radius: 8px; overflow: hidden; }
-  .range button {
-    background: var(--panel-2); color: var(--muted); border: 0; padding: 7px 14px;
-    cursor: pointer; font-size: 13px; font-weight: 600;
-  }
-  .range button.active { background: var(--panel); color: var(--text); }
-  .range button:hover { color: var(--text); }
-
-  .notice {
-    border: 1px solid var(--border); border-left: 3px solid var(--amber);
-    background: var(--panel); border-radius: 8px; padding: 12px 16px; margin-bottom: 20px;
-    color: var(--text);
-  }
-  .notice strong { color: var(--amber); }
-
-  .cards { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; margin-bottom: 20px; }
-  @media (max-width: 760px) { .cards { grid-template-columns: repeat(2, 1fr); } }
-  .card { background: var(--panel); border: 1px solid var(--border); border-radius: 12px; padding: 16px; }
-  .card .k { color: var(--muted); font-size: 12px; text-transform: uppercase; letter-spacing: 0.04em; margin-bottom: 8px; }
-  .card .v { font-family: var(--mono); font-size: 22px; font-weight: 650; font-variant-numeric: tabular-nums; }
-  .card .v small { font-size: 12px; color: var(--muted); font-weight: 500; }
-  .card .d { color: var(--muted); font-size: 12px; margin-top: 6px; }
-  .split { display: flex; gap: 12px; align-items: baseline; }
-  .up { color: var(--violet); } .down { color: var(--cyan); }
-
-  .grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-bottom: 20px; }
-  @media (max-width: 860px) { .grid2 { grid-template-columns: 1fr; } }
-  .panel { background: var(--panel); border: 1px solid var(--border); border-radius: 12px; padding: 16px; }
-  .panel h2 { font-size: 14px; font-weight: 650; margin: 0 0 14px; color: var(--text); }
-  .panel h2 .hint { color: var(--muted); font-weight: 400; font-size: 12px; margin-left: 6px; }
-
-  svg { display: block; width: 100%; }
-  .axis { stroke: var(--border); }
-  .legend { display: flex; gap: 16px; font-size: 12px; color: var(--muted); margin-bottom: 10px; }
-  .legend span { display: inline-flex; align-items: center; gap: 6px; }
-  .sw { width: 10px; height: 10px; border-radius: 2px; display: inline-block; }
-
-  .row { display: flex; align-items: center; gap: 12px; padding: 8px 0; border-bottom: 1px solid var(--border); }
-  .row:last-child { border-bottom: 0; }
-  .row .name { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-  .row .name small { color: var(--muted); display: block; font-size: 11px; }
-  .barwrap { flex: 0 0 46%; display: flex; gap: 2px; height: 10px; border-radius: 3px; overflow: hidden; background: var(--panel-2); }
-  .barwrap .bd { background: var(--cyan); } .barwrap .bu { background: var(--violet); }
-  .row .tot { font-family: var(--mono); font-size: 13px; color: var(--muted); min-width: 90px; text-align: right; font-variant-numeric: tabular-nums; }
-
-  .sev { font-size: 11px; font-weight: 600; padding: 2px 8px; border-radius: 6px; text-transform: uppercase; }
-  .sev.warning { background: rgba(245,158,11,0.15); color: var(--amber); }
-  .sev.info { background: rgba(148,163,184,0.15); color: var(--muted); }
-  .sev.critical { background: rgba(248,113,113,0.15); color: var(--red); }
-
-  .foot { display: flex; gap: 20px; flex-wrap: wrap; color: var(--muted); font-size: 12px; }
-  .foot b { color: var(--text); font-family: var(--mono); font-variant-numeric: tabular-nums; }
-  .empty { color: var(--muted); padding: 16px 0; font-style: italic; }
-  code { font-family: var(--mono); font-size: 12px; color: var(--text); }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;font-size:14px;line-height:1.5;-webkit-font-smoothing:antialiased}
+  a{color:var(--cyan);text-decoration:none}
+  .wrap{max-width:1180px;margin:0 auto;padding:20px 20px 72px}
+  header{display:flex;align-items:center;gap:14px;flex-wrap:wrap;margin-bottom:14px}
+  h1{font-size:20px;font-weight:650;margin:0;letter-spacing:-.01em}
+  .sub{color:var(--muted);font-size:13px}
+  .spacer{flex:1}
+  .pill{display:inline-flex;align-items:center;gap:7px;padding:5px 12px;border-radius:999px;font-size:12px;font-weight:600;border:1px solid var(--border);background:var(--panel2)}
+  .pill .dot{width:8px;height:8px;border-radius:50%;background:var(--muted)}
+  .pill.live{color:var(--green)}.pill.live .dot{background:var(--green)}
+  .pill.delayed,.pill.stale,.pill.paused{color:var(--amber)}.pill.delayed .dot,.pill.stale .dot,.pill.paused .dot{background:var(--amber)}
+  .pill.unreachable{color:var(--red)}.pill.unreachable .dot{background:var(--red)}
+  .tabs{display:flex;gap:4px;border-bottom:1px solid var(--border);margin-bottom:18px;overflow-x:auto}
+  .tabs button{background:none;border:0;color:var(--muted);padding:10px 16px;font-size:14px;font-weight:600;cursor:pointer;border-bottom:2px solid transparent}
+  .tabs button.active{color:var(--text);border-bottom-color:var(--cyan)}
+  .range{display:inline-flex;border:1px solid var(--border);border-radius:8px;overflow:hidden}
+  .range button{background:var(--panel2);color:var(--muted);border:0;padding:7px 13px;cursor:pointer;font-size:13px;font-weight:600}
+  .range button.active{background:var(--panel);color:var(--text)}
+  .notice{border:1px solid var(--border);border-left:3px solid var(--amber);background:var(--panel);border-radius:8px;padding:11px 15px;margin-bottom:16px}
+  .notice strong{color:var(--amber)}
+  .cards{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:18px}
+  @media(max-width:760px){.cards{grid-template-columns:repeat(2,1fr)}}
+  .card{background:var(--panel);border:1px solid var(--border);border-radius:12px;padding:15px}
+  .card .k{color:var(--muted);font-size:11px;text-transform:uppercase;letter-spacing:.05em;margin-bottom:7px}
+  .card .v{font-family:var(--mono);font-size:21px;font-weight:650;font-variant-numeric:tabular-nums}
+  .card .v small{font-size:12px;color:var(--muted);font-weight:500}
+  .card .d{color:var(--muted);font-size:12px;margin-top:5px}
+  .up{color:var(--violet)}.down{color:var(--cyan)}
+  .grid2{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:18px}
+  @media(max-width:860px){.grid2{grid-template-columns:1fr}}
+  .panel{background:var(--panel);border:1px solid var(--border);border-radius:12px;padding:16px}
+  .panel h2{font-size:14px;font-weight:650;margin:0 0 13px}
+  .panel h2 .hint{color:var(--muted);font-weight:400;font-size:12px;margin-left:6px}
+  svg{display:block;width:100%}
+  .legend{display:flex;gap:16px;font-size:12px;color:var(--muted);margin-bottom:9px}
+  .legend span{display:inline-flex;align-items:center;gap:6px}
+  .sw{width:10px;height:10px;border-radius:2px;display:inline-block}
+  .row{display:flex;align-items:center;gap:12px;padding:8px 0;border-bottom:1px solid var(--border)}
+  .row:last-child{border-bottom:0}
+  .row.clickable{cursor:pointer}
+  .row.clickable:hover{background:var(--panel2)}
+  .row .name{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .row .name small{color:var(--muted);display:block;font-size:11px}
+  .barwrap{flex:0 0 44%;display:flex;gap:2px;height:10px;border-radius:3px;overflow:hidden;background:var(--panel2)}
+  .barwrap .bd{background:var(--cyan)}.barwrap .bu{background:var(--violet)}
+  .row .tot{font-family:var(--mono);font-size:13px;color:var(--muted);min-width:90px;text-align:right;font-variant-numeric:tabular-nums}
+  .sev{font-size:11px;font-weight:600;padding:2px 8px;border-radius:6px;text-transform:uppercase}
+  .sev.warning{background:rgba(245,158,11,.15);color:var(--amber)}
+  .sev.info{background:rgba(148,163,184,.15);color:var(--muted)}
+  .sev.critical{background:rgba(248,113,113,.15);color:var(--red)}
+  .foot{display:flex;gap:20px;flex-wrap:wrap;color:var(--muted);font-size:12px}
+  .foot b{color:var(--text);font-family:var(--mono);font-variant-numeric:tabular-nums}
+  .empty{color:var(--muted);padding:14px 0;font-style:italic}
+  .section{display:none}.section.active{display:block}
+  .table{width:100%;border-collapse:collapse}
+  .table th,.table td{text-align:left;padding:8px 10px;border-bottom:1px solid var(--border);font-size:13px}
+  .table th{color:var(--muted);font-weight:600;font-size:11px;text-transform:uppercase;letter-spacing:.04em}
+  .table td.mono{font-family:var(--mono);font-variant-numeric:tabular-nums}
+  .modal{position:fixed;inset:0;background:rgba(0,0,0,.55);display:none;align-items:flex-start;justify-content:center;padding:40px 16px;z-index:50}
+  .modal.open{display:flex}
+  .modal .box{background:var(--panel);border:1px solid var(--border);border-radius:14px;max-width:820px;width:100%;max-height:88vh;overflow:auto;padding:20px}
+  .modal .close{float:right;background:none;border:0;color:var(--muted);font-size:20px;cursor:pointer}
+  .bars{display:flex;align-items:flex-end;gap:4px;height:120px;margin-top:6px}
+  .bars .bar{flex:1;border-radius:2px 2px 0 0}
 </style>
 </head>
 <body>
 <div class="wrap">
   <header>
-    <div>
-      <h1>Network</h1>
-      <div class="sub">Cerberus LAN intelligence — what's on the wire, who's using it, what changed.</div>
-    </div>
+    <div><h1>Network</h1><div class="sub">Cerberus LAN intelligence</div></div>
     <div class="spacer"></div>
     <div class="range" id="range">
-      <button data-r="1h">1h</button>
-      <button data-r="24h" class="active">24h</button>
-      <button data-r="7d">7d</button>
+      <button data-r="1h">1h</button><button data-r="24h" class="active">24h</button><button data-r="7d">7d</button>
     </div>
     <div class="pill" id="status"><span class="dot"></span><span id="statusWord">…</span></div>
   </header>
 
   <div class="notice" id="notice" hidden></div>
 
-  <div class="cards">
-    <div class="card">
-      <div class="k">Volume (completed-flow)</div>
-      <div class="v"><span class="down" id="volDown">—</span> <small>↓</small></div>
-      <div class="v"><span class="up" id="volUp">—</span> <small>↑</small></div>
-      <div class="d" id="volNote">bytes · 1h buckets</div>
-    </div>
-    <div class="card">
-      <div class="k">Active devices</div>
-      <div class="v" id="activeDevices">—</div>
-      <div class="d" id="devicesNote">of N observed</div>
-    </div>
-    <div class="card">
-      <div class="k">Findings</div>
-      <div class="v" id="findingsCount">—</div>
-      <div class="d" id="findingsNote">needing attention</div>
-    </div>
-    <div class="card">
-      <div class="k">Connectivity</div>
-      <div class="v" id="probeOk">—</div>
-      <div class="d" id="probeNote">probes ok / failed</div>
-    </div>
-  </div>
+  <nav class="tabs" id="tabs">
+    <button data-s="overview" class="active">Overview</button>
+    <button data-s="devices">Devices</button>
+    <button data-s="traffic">Traffic</button>
+    <button data-s="trends">Trends</button>
+    <button data-s="health">Health</button>
+  </nav>
 
-  <div class="panel" style="margin-bottom:20px">
-    <h2>Activity <span class="hint">up/down bytes · completed flows only</span></h2>
-    <div class="legend">
-      <span><span class="sw" style="background:var(--cyan)"></span> download</span>
-      <span><span class="sw" style="background:var(--violet)"></span> upload</span>
+  <!-- OVERVIEW -->
+  <section class="section active" id="s-overview">
+    <div class="cards">
+      <div class="card"><div class="k">Volume (completed-flow)</div>
+        <div class="v"><span class="down" id="volDown">—</span> <small>↓</small></div>
+        <div class="v"><span class="up" id="volUp">—</span> <small>↑</small></div>
+        <div class="d" id="volNote">bytes · 1h buckets</div></div>
+      <div class="card"><div class="k">Active devices</div><div class="v" id="activeDevices">—</div><div class="d" id="devicesNote">of N observed</div></div>
+      <div class="card"><div class="k">Findings</div><div class="v" id="findingsCount">—</div><div class="d" id="findingsNote">needing attention</div></div>
+      <div class="card"><div class="k">Connectivity</div><div class="v" id="probeOk">—</div><div class="d" id="probeNote">probes ok / failed</div></div>
     </div>
-    <svg id="chart" viewBox="0 0 960 240" preserveAspectRatio="none"></svg>
-  </div>
+    <div class="panel" style="margin-bottom:18px">
+      <h2>Activity <span class="hint">up/down bytes · completed flows only</span></h2>
+      <div class="legend"><span><span class="sw" style="background:var(--cyan)"></span> download</span><span><span class="sw" style="background:var(--violet)"></span> upload</span></div>
+      <svg id="chart" viewBox="0 0 960 240" preserveAspectRatio="none"></svg>
+    </div>
+    <div class="grid2">
+      <div class="panel"><h2>Top talkers <span class="hint">completed-flow volume</span></h2><div id="talkers"></div></div>
+      <div class="panel"><h2>Needs attention <span class="hint">deterministic findings</span></h2><div id="findings"></div></div>
+    </div>
+  </section>
 
-  <div class="grid2">
-    <div class="panel">
-      <h2>Top talkers <span class="hint">share of completed-flow volume</span></h2>
-      <div id="talkers"></div>
-    </div>
-    <div class="panel">
-      <h2>Needs attention <span class="hint">local findings</span></h2>
-      <div id="findings"></div>
-    </div>
-  </div>
+  <!-- DEVICES -->
+  <section class="section" id="s-devices">
+    <div class="panel"><h2>Devices <span class="hint">known MACs + unidentified IPs, by total volume</span></h2><div id="devices"></div></div>
+  </section>
 
-  <div class="panel">
-    <h2>Trust &amp; coverage</h2>
-    <div class="foot" id="health">
-      <span>capture drops (cumulative): <b id="hDrops">—</b></span>
-      <span>devices observed: <b id="hDevices">—</b></span>
-      <span>findings (total): <b id="hEvents">—</b></span>
-      <span>data as of: <b id="hAsof">—</b></span>
+  <!-- TRAFFIC -->
+  <section class="section" id="s-traffic">
+    <div class="grid2">
+      <div class="panel"><h2>Top destinations <span class="hint">by completed-flow volume</span></h2><div id="destinations"></div></div>
+      <div class="panel"><h2>Protocol mix <span class="hint">application protocol</span></h2><div id="protocols"></div></div>
     </div>
-  </div>
+  </section>
+
+  <!-- TRENDS -->
+  <section class="section" id="s-trends">
+    <div class="panel"><h2>Daily volume <span class="hint">day-over-day · capture window only</span></h2>
+      <div class="legend"><span><span class="sw" style="background:var(--cyan)"></span> download</span><span><span class="sw" style="background:var(--violet)"></span> upload</span></div>
+      <div id="trends"></div></div>
+  </section>
+
+  <!-- HEALTH -->
+  <section class="section" id="s-health">
+    <div class="grid2">
+      <div class="panel"><h2>Connectivity outages <span class="hint">failed probes by target</span></h2><div id="diagnostics"></div></div>
+      <div class="panel"><h2>Trust &amp; coverage</h2><div class="foot" id="health" style="flex-direction:column;gap:10px">
+        <span>capture drops (cumulative): <b id="hDrops">—</b></span>
+        <span>devices observed: <b id="hDevices">—</b></span>
+        <span>findings: <b id="hFindings">—</b></span>
+        <span>events: <b id="hEvents">—</b></span>
+        <span>data as of: <b id="hAsof">—</b></span>
+      </div></div>
+    </div>
+  </section>
 </div>
 
+<div class="modal" id="modal"><div class="box">
+  <button class="close" onclick="document.getElementById('modal').classList.remove('open')">✕</button>
+  <h2 id="mTitle" style="margin-top:0">Device</h2>
+  <div id="mBody"></div>
+</div></div>
+
 <script>
-const fmt = (n) => {
-  if (n == null || isNaN(n)) return "—";
-  const abs = Math.abs(n);
-  if (abs >= 1e12) return (n/1e12).toFixed(2)+" TB";
-  if (abs >= 1e9) return (n/1e9).toFixed(2)+" GB";
-  if (abs >= 1e6) return (n/1e6).toFixed(2)+" MB";
-  if (abs >= 1e3) return (n/1e3).toFixed(1)+" KB";
-  return n+" B";
-};
-const ago = (s) => {
-  if (s == null) return "—";
-  if (s < 60) return s+"s ago";
-  if (s < 3600) return Math.round(s/60)+"m ago";
-  if (s < 86400) return Math.round(s/3600)+"h ago";
-  return Math.round(s/86400)+"d ago";
-};
-let RANGE = "24h";
+const fmt=(n)=>{if(n==null||isNaN(n))return"—";const a=Math.abs(n);if(a>=1e12)return(n/1e12).toFixed(2)+" TB";if(a>=1e9)return(n/1e9).toFixed(2)+" GB";if(a>=1e6)return(n/1e6).toFixed(2)+" MB";if(a>=1e3)return(n/1e3).toFixed(1)+" KB";return n+" B"};
+const ago=(s)=>{if(s==null)return"—";if(s<60)return s+"s ago";if(s<3600)return Math.round(s/60)+"m ago";if(s<86400)return Math.round(s/3600)+"h ago";return Math.round(s/86400)+"d ago"};
+let RANGE="24h";
+const esc=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 
-function setStatus(s) {
-  const p = document.getElementById("status");
-  const w = document.getElementById("statusWord");
-  const st = s.state;
-  p.className = "pill " + st;
-  const labels = {live:"live", delayed:"delayed", stale:"stale", paused:"paused", unreachable:"unreachable"};
-  w.textContent = labels[st] || st;
-  const n = document.getElementById("notice");
-  if (st === "paused") {
-    n.hidden = false;
-    n.innerHTML = "<strong>Sensor paused.</strong> Capture is stopped — data is as of " +
-      s.data_as_of + " (" + ago(s.data_age_seconds) + "). No live figures are being claimed.";
-  } else if (st === "unreachable") {
-    n.hidden = false;
-    n.innerHTML = "<strong>Unreachable.</strong> " + (s.message || "No data.");
-  } else if (st === "stale" || st === "delayed") {
-    n.hidden = false;
-    n.innerHTML = "<strong>Data delayed.</strong> As of " + s.data_as_of + " (" + ago(s.data_age_seconds) + ").";
-  } else {
-    n.hidden = true;
-  }
-}
+function setStatus(s){const p=document.getElementById("status"),w=document.getElementById("statusWord");p.className="pill "+s.state;w.textContent={live:"live",delayed:"delayed",stale:"stale",paused:"paused",unreachable:"unreachable"}[s.state]||s.state;const n=document.getElementById("notice");if(s.state==="paused"){n.hidden=false;n.innerHTML="<strong>Sensor paused.</strong> Capture is stopped — data as of "+s.data_as_of+" ("+ago(s.data_age_seconds)+"). No live figures are being claimed."}else if(s.state==="unreachable"){n.hidden=false;n.innerHTML="<strong>Unreachable.</strong> "+(s.message||"No data.")}else if(s.state==="stale"||s.state==="delayed"){n.hidden=false;n.innerHTML="<strong>Data delayed.</strong> As of "+s.data_as_of+" ("+ago(s.data_age_seconds)+")."}else{n.hidden=true}}
 
-async function loadOverview() {
-  const r = await fetch("/api/network/overview?range=" + RANGE);
-  const d = await r.json();
-  setStatus(d.state);
-  const c = d.cards;
-  document.getElementById("volDown").textContent = fmt(c.volume.down);
-  document.getElementById("volUp").textContent = fmt(c.volume.up);
-  document.getElementById("volNote").textContent =
-    c.volume.label + " · " + c.volume.accounting_interval + " buckets";
-  document.getElementById("activeDevices").textContent = c.active_devices;
-  document.getElementById("devicesNote").textContent = "of " + c.devices_total + " observed";
-  document.getElementById("findingsCount").textContent = c.findings.attention;
-  document.getElementById("findingsNote").textContent = "of " + c.findings.total + " findings in window";
-  document.getElementById("probeOk").textContent = c.connectivity.ok;
-  document.getElementById("probeNote").textContent = "ok / " + c.connectivity.fail + " failed probes";
-}
+async function j(url){const r=await fetch(url);return r.json()}
 
-async function loadTimeline() {
-  const r = await fetch("/api/network/timeline?range=" + RANGE);
-  const d = await r.json();
-  const svg = document.getElementById("chart");
-  const W = 960, H = 240, P = 8;
-  const buckets = d.buckets || [];
-  if (!buckets.length) { svg.innerHTML = ""; return; }
-  let max = 0;
-  buckets.forEach(b => { max = Math.max(max, b.down + b.up); });
-  max = max || 1;
-  const step = (W - 2*P) / Math.max(1, buckets.length - 1);
-  const y = (v) => H - P - (v / max) * (H - 2*P);
-  const poly = (key) => buckets.map((b, i) => (P + i*step) + "," + y(b[key])).join(" ");
-  const area = (key, base) => {
-    const top = buckets.map((b,i) => (P+i*step)+","+y(b[key])).join(" ");
-    const bottom = buckets.map((b,i) => (P+i*step)+","+(H-P)).reverse().join(" ");
-    return top + " " + bottom;
-  };
-  const downArea = area("down"), upArea = area("up");
-  const downLine = poly("down"), upLine = poly("up");
-  const x1 = P, x2 = W - P;
-  svg.innerHTML = "";
-  const g = document.createElementNS("http://www.w3.org/2000/svg", "g");
-  // grid
-  for (let i=0;i<=4;i++){ const gy = P + i*(H-2*P)/4; const ln=document.createElementNS("http://www.w3.org/2000/svg","line"); ln.setAttribute("x1",x1); ln.setAttribute("x2",x2); ln.setAttribute("y1",gy); ln.setAttribute("y2",gy); ln.setAttribute("class","axis"); ln.setAttribute("stroke-dasharray","2 4"); g.appendChild(ln); }
-  const mk = (pts, fill, stroke) => {
-    const p = document.createElementNS("http://www.w3.org/2000/svg","polygon");
-    p.setAttribute("points", pts); p.setAttribute("fill", fill); p.setAttribute("opacity","0.25");
-    g.appendChild(p);
-    const pl = document.createElementNS("http://www.w3.org/2000/svg","polyline");
-    pl.setAttribute("points", pts); pl.setAttribute("fill","none"); pl.setAttribute("stroke", stroke); pl.setAttribute("stroke-width","1.5"); pl.setAttribute("vector-effect","non-scaling-stroke");
-    g.appendChild(pl);
-  };
-  mk(downArea, "var(--cyan)", "var(--cyan)");
-  mk(upArea, "var(--violet)", "var(--violet)");
-  svg.appendChild(g);
-  const cap = document.createElementNS("http://www.w3.org/2000/svg","text");
-  cap.setAttribute("x", x1); cap.setAttribute("y", 12); cap.setAttribute("fill","var(--muted)"); cap.setAttribute("font-size","10");
-  cap.textContent = "peak " + fmt(max) + " per " + (d.grain >= 3600 ? "hour" : d.grain >= 300 ? "5 min" : "minute");
-  svg.appendChild(cap);
-}
+async function loadOverview(){const d=await j("/api/network/overview?range="+RANGE);setStatus(d.state);const c=d.cards;
+  document.getElementById("volDown").textContent=fmt(c.volume.down);
+  document.getElementById("volUp").textContent=fmt(c.volume.up);
+  document.getElementById("volNote").textContent=c.volume.label+" · "+c.volume.accounting_interval+" buckets";
+  document.getElementById("activeDevices").textContent=c.active_devices;
+  document.getElementById("devicesNote").textContent="of "+c.devices_total+" observed";
+  document.getElementById("findingsCount").textContent=c.findings.attention;
+  document.getElementById("findingsNote").textContent="of "+c.findings.total+" findings in window";
+  document.getElementById("probeOk").textContent=c.connectivity.ok;
+  document.getElementById("probeNote").textContent="ok / "+c.connectivity.fail+" failed probes"}
 
-async function loadTalkers() {
-  const r = await fetch("/api/network/talkers?range=" + RANGE);
-  const d = await r.json();
-  const el = document.getElementById("talkers");
-  const list = d.talkers || [];
-  if (!list.length) { el.innerHTML = '<div class="empty">No flow records in this window.</div>'; return; }
-  let html = "";
-  list.forEach(t => {
-    const downPct = t.total ? Math.round(t.down / t.total * 100) : 0;
-    html += '<div class="row">' +
-      '<div class="name">' + escapeHtml(t.label) +
-        (t.vendor ? '<small>' + escapeHtml(t.vendor) + '</small>' : '<small>' + escapeHtml(t.device_id) + '</small>') +
-      '</div>' +
-      '<div class="barwrap"><span class="bd" style="width:' + downPct + '%"></span><span class="bu" style="width:' + (100-downPct) + '%"></span></div>' +
-      '<div class="tot">' + fmt(t.total) + '</div>' +
-    '</div>';
-  });
-  el.innerHTML = html;
-}
+async function loadTimeline(){const d=await j("/api/network/timeline?range="+RANGE);const svg=document.getElementById("chart");const W=960,H=240,P=8,bk=d.buckets||[];
+  if(!bk.length){svg.innerHTML="";return}let mx=0;bk.forEach(b=>mx=Math.max(mx,b.down+b.up));mx=mx||1;
+  const step=(W-2*P)/Math.max(1,bk.length-1),y=v=>H-P-(v/mx)*(H-2*P);
+  const mk=(pts,fill,stroke)=>{const p=document.createElementNS("http://www.w3.org/2000/svg","polygon");p.setAttribute("points",pts);p.setAttribute("fill",fill);p.setAttribute("opacity",.25);svg.appendChild(p);const l=document.createElementNS("http://www.w3.org/2000/svg","polyline");l.setAttribute("points",pts);l.setAttribute("fill","none");l.setAttribute("stroke",stroke);l.setAttribute("stroke-width",1.5);l.setAttribute("vector-effect","non-scaling-stroke");svg.appendChild(l)};
+  const area=key=>{const top=bk.map((b,i)=>(P+i*step)+","+y(b[key])).join(" ");const bot=bk.map((b,i)=>(P+i*step)+","+(H-P)).reverse().join(" ");return top+" "+bot};
+  svg.innerHTML="";
+  for(let i=0;i<=4;i++){const ln=document.createElementNS("http://www.w3.org/2000/svg","line");ln.setAttribute("x1",P);ln.setAttribute("x2",W-P);ln.setAttribute("y1",P+i*(H-2*P)/4);ln.setAttribute("y2",P+i*(H-2*P)/4);ln.setAttribute("stroke","var(--border)");ln.setAttribute("stroke-dasharray","2 4");svg.appendChild(ln)}
+  mk(area("down"),"var(--cyan)","var(--cyan)");mk(area("up"),"var(--violet)","var(--violet)");
+  const cap=document.createElementNS("http://www.w3.org/2000/svg","text");cap.setAttribute("x",P);cap.setAttribute("y",12);cap.setAttribute("fill","var(--muted)");cap.setAttribute("font-size",10);cap.textContent="peak "+fmt(mx)+" per "+(d.grain>=3600?"hour":d.grain>=300?"5 min":"minute");svg.appendChild(cap)}
 
-async function loadFindings() {
-  const r = await fetch("/api/network/findings?limit=20");
-  const d = await r.json();
-  const el = document.getElementById("findings");
-  const list = d.findings || [];
-  if (!list.length) { el.innerHTML = '<div class="empty">No findings recorded.</div>'; return; }
-  let html = "";
-  list.forEach(f => {
-    const sev = f.severity || "info";
-    const detail = f.detail && f.detail.event ? f.detail.event : (f.detail.raw || f.kind || "");
-    html += '<div class="row"><div class="name">' + escapeHtml(String(detail)) +
-      '<small>' + new Date(f.ts*1000).toLocaleString() + '</small></div>' +
-      '<span class="sev ' + sev + '">' + sev + '</span></div>';
-  });
-  el.innerHTML = html;
-}
+async function loadTalkers(){const d=await j("/api/network/talkers?range="+RANGE);const el=document.getElementById("talkers");const list=d.talkers||[];
+  if(!list.length){el.innerHTML='<div class="empty">No flow records in this window.</div>';return}
+  el.innerHTML=list.map(t=>{const pct=t.total?Math.round(t.down/t.total*100):0;return '<div class="row clickable" onclick="openDevice(''+esc(t.device_id)+'')"><div class="name">'+esc(t.label)+(t.vendor?'<small>'+esc(t.vendor)+'</small>':'<small>'+esc(t.device_id)+'</small>')+'</div><div class="barwrap"><span class="bd" style="width:'+pct+'%"></span><span class="bu" style="width:'+(100-pct)+'%"></span></div><div class="tot">'+fmt(t.total)+'</div></div>'}).join("")}
 
-async function loadHealth() {
-  const r = await fetch("/api/network/health");
-  const d = await r.json();
-  if (d.state !== "ok") return;
-  document.getElementById("hDrops").textContent = (d.capture.kernel_drops||0).toLocaleString();
-  document.getElementById("hDevices").textContent = d.devices;
-  document.getElementById("hEvents").textContent = d.events_total;
-}
+async function loadFindings(){const d=await j("/api/network/findings?limit=20");const el=document.getElementById("findings");const list=d.findings||[];
+  if(!list.length){el.innerHTML='<div class="empty">No findings — traffic within baseline.</div>';return}
+  el.innerHTML=list.map(f=>{const ev=f.detail&&f.detail.bytes?fmt(f.detail.bytes)+" transferred":" ";return '<div class="row"><div class="name"><b>'+esc(f.label)+'</b>'+esc(ev)+'<small>'+esc(f.device_id||"")+" · "+new Date(f.ts*1000).toLocaleString()+'</small></div><span class="sev '+esc(f.severity||'info')+'">'+esc(f.severity||'info')+'</span></div>'}).join("")}
 
-function escapeHtml(s) {
-  return String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-}
+async function loadDevices(){const d=await j("/api/network/devices");const el=document.getElementById("devices");const list=d.devices||[];
+  if(!list.length){el.innerHTML='<div class="empty">No devices.</div>';return}
+  el.innerHTML=list.map(t=>'<div class="row clickable" onclick="openDevice(''+esc(t.device_id)+'')"><div class="name">'+esc(t.label)+(t.known?'<small>'+esc(t.ip||"")+" · "+esc(t.vendor||"unknown")+'</small>':'<small>unidentified IP · '+esc(t.ip)+'</small>')+'</div><div class="tot">'+fmt(t.total)+'</div></div>').join("")}
 
-async function loadAll() {
-  await Promise.all([loadOverview(), loadTimeline(), loadTalkers(), loadFindings(), loadHealth()]);
-}
+async function openDevice(id){const d=await j("/api/network/device/"+encodeURIComponent(id));
+  document.getElementById("mTitle").textContent=d.label||id;
+  const b=document.getElementById("mBody");
+  const tls=(d.timeline||[]).map(x=>({up:x.up||0,down:x.down||0}));
+  let tlHtml='<div class="empty">No traffic.</div>';
+  if(tls.length){let mx=1;tls.forEach(x=>mx=Math.max(mx,x.up+x.down));tlHtml='<div class="bars">'+tls.map(x=>{const h=Math.max(2,Math.round((x.up+x.down)/mx*120));return '<div class="bar" style="height:'+h+'px;background:linear-gradient(to top,var(--violet) '+Math.round((x.up/(x.up+x.down||1))*100)+'%,var(--cyan) '+Math.round((x.up/(x.up+x.down||1))*100)+'%)"></div>'}).join("")+'</div><div class="d" style="margin-top:4px">hourly traffic (oldest → newest)</div>'}
+  const dst=(d.destinations||[]).slice(0,10).map(x=>'<div class="row"><div class="name">'+esc(x.dest_ip)+'<small>'+esc(x.app_proto||"")+'</small></div><div class="tot">'+fmt(x.bytes)+'</div></div>').join("")||'<div class="empty">No destinations.</div>';
+  const pro=(d.protocols||[]).map(x=>'<div class="row"><div class="name">'+esc(x.app_proto)+'</div><div class="tot">'+fmt(x.bytes)+'</div></div>').join("")||'<div class="empty">No protocols.</div>';
+  const fnd=(d.findings||[]).map(x=>'<div class="row"><div class="name">'+esc(x.label)+'<small>'+new Date(x.ts*1000).toLocaleString()+'</small></div><span class="sev '+esc(x.severity||'info')+'">'+esc(x.severity||'info')+'</span></div>').join("")||'<div class="empty">No findings for this device.</div>';
+  b.innerHTML='<div class="grid2"><div class="panel"><h2>Traffic</h2>'+tlHtml+'</div><div class="panel"><h2>Findings</h2>'+fnd+'</div></div><div class="grid2"><div class="panel"><h2>Top destinations</h2>'+dst+'</div><div class="panel"><h2>Protocol mix</h2>'+pro+'</div></div>';
+  document.getElementById("modal").classList.add("open")}
 
-document.querySelectorAll("#range button").forEach(b => {
-  b.addEventListener("click", () => {
-    document.querySelectorAll("#range button").forEach(x => x.classList.remove("active"));
-    b.classList.add("active");
-    RANGE = b.dataset.r;
-    loadAll();
-  });
-});
+async function loadTraffic(){const d=await j("/api/network/destinations?range="+RANGE);const p=await j("/api/network/protocols?range="+RANGE);
+  document.getElementById("destinations").innerHTML=(d.destinations||[]).map(x=>'<div class="row"><div class="name">'+esc(x.dest_ip)+'<small>'+esc(x.app_proto||"")+'</small></div><div class="tot">'+fmt(x.bytes)+'</div></div>').join("")||'<div class="empty">No destinations.</div>';
+  document.getElementById("protocols").innerHTML=(p.protocols||[]).map(x=>'<div class="row"><div class="name">'+esc(x.app_proto)+'</div><div class="tot">'+fmt(x.bytes)+'</div></div>').join("")||'<div class="empty">No protocols.</div>'}
 
-loadAll();
-setInterval(loadAll, 60000);
+async function loadTrends(){const d=await j("/api/network/trends");const el=document.getElementById("trends");const days=d.days||[];
+  if(!days.length){el.innerHTML='<div class="empty">No trend data.</div>';return}
+  let mx=1;days.forEach(x=>mx=Math.max(mx,x.total));
+  const bars=days.map(x=>{const h=Math.max(2,Math.round(x.total/mx*140));return '<div class="bar" style="height:'+h+'px;background:linear-gradient(to top,var(--violet) 0%,var(--cyan) 100%)" title="'+fmt(x.total)+'"></div>'}).join("");
+  const labels=days.map(x=>'<div class="bar" style="height:auto;background:none;text-align:center;font-size:10px;color:var(--muted)">'+new Date(x.ts*1000).toLocaleDateString(undefined,{month:'numeric',day:'numeric'})+'</div>').join("");
+  el.innerHTML='<div class="bars" style="height:150px">'+bars+'</div><div class="bars" style="height:auto;margin-top:4px">'+labels+'</div><div class="d" style="margin-top:8px">'+days.length+' days of capture · up=violet, down=cyan (stacked)</div>'}
+
+async function loadDiagnostics(){const d=await j("/api/network/diagnostics");const el=document.getElementById("diagnostics");const list=d.outages||[];
+  if(!list.length){el.innerHTML='<div class="empty">No probe failures recorded.</div>';return}
+  el.innerHTML=list.slice(0,30).map(x=>'<div class="row"><div class="name">'+esc(x.target)+'<small>'+esc(x.kind)+" · "+new Date(x.ts*1000).toLocaleString()+'</small></div><span class="sev warning">'+x.fail+' fail</span></div>').join("")}
+
+async function loadHealth(){const d=await j("/api/network/health");if(d.state!=="ok")return;
+  document.getElementById("hDrops").textContent=(d.capture.kernel_drops||0).toLocaleString();
+  document.getElementById("hDevices").textContent=d.devices;
+  document.getElementById("hFindings").textContent=d.findings_total;
+  document.getElementById("hEvents").textContent=d.events_total}
+
+let active="overview";
+async function loadAll(){await Promise.all([loadOverview(),loadTimeline(),loadTalkers(),loadFindings(),loadDevices(),loadTraffic(),loadTrends(),loadDiagnostics(),loadHealth()])}
+
+document.querySelectorAll("#range button").forEach(b=>b.addEventListener("click",()=>{document.querySelectorAll("#range button").forEach(x=>x.classList.remove("active"));b.classList.add("active");RANGE=b.dataset.r;loadAll()}));
+document.querySelectorAll("#tabs button").forEach(b=>b.addEventListener("click",()=>{document.querySelectorAll("#tabs button").forEach(x=>x.classList.remove("active"));b.classList.add("active");active=b.dataset.s;document.querySelectorAll(".section").forEach(s=>s.classList.remove("active"));document.getElementById("s-"+active).classList.add("active")}));
+
+loadAll();setInterval(loadAll,60000);
 </script>
 </body>
 </html>

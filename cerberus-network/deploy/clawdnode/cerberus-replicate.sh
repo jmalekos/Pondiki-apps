@@ -27,7 +27,11 @@ if [[ -z "$EXPECTED" || "$EXPECTED" != "$ACTUAL" ]]; then
   exit 1
 fi
 
-# Atomic publish: rename over the live path so readers never see a partial file.
+# Retain the previous valid generation for rollback, then atomic publish.
+if [[ -f "$LIVE_DB" ]]; then
+  mv -f "$LIVE_DB" "$LIVE_DB.prev"
+  mv -f "$LIVE_SHA" "$LIVE_SHA.prev" 2>/dev/null || true
+fi
 mv -f "$STAGE_DB" "$LIVE_DB"
 mv -f "$STAGE_SHA" "$LIVE_SHA"
-echo "published $LIVE_DB ($(stat -c%s "$LIVE_DB") bytes, sha256 $ACTUAL)"
+echo "published $LIVE_DB ($(stat -c%s "$LIVE_DB") bytes, sha256 $ACTUAL; prev retained)"
