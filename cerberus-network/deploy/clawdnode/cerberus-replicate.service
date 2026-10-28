@@ -1,0 +1,9 @@
+[Unit]
+Description=Pull Cerberus rollup snapshot for the network dashboard
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=oneshot
+User=cretan
+ExecStart=/home/cretan/.openclaw/workspace/repos/Pondiki-apps/cerberus-network/deploy/clawdnode/cerberus-replicate.sh

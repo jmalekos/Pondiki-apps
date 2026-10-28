@@ -1,0 +1,11 @@
+[Unit]
+Description=Cerberus network rollup + retention worker
+Documentation=file:///opt/cerberus-net/README.md
+RequiresMountsFor=/srv/cerberus-data
+
+[Service]
+Type=oneshot
+User=root
+Nice=10
+ExecStart=/usr/bin/python3 /opt/cerberus-net/rollups.py rollup --net /srv/cerberus-data/cerberus-net/net.db --roll /srv/cerberus-data/cerberus-net/rollups.db
+ExecStart=/usr/bin/python3 /opt/cerberus-net/rollups.py export --roll /srv/cerberus-data/cerberus-net/rollups.db --out /srv/cerberus-data/cerberus-net/rollups-export.db

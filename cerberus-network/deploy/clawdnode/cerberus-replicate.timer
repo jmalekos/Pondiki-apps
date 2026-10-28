@@ -1,0 +1,11 @@
+[Unit]
+Description=Pull Cerberus rollup snapshot hourly
+
+[Timer]
+OnBootSec=3min
+OnUnitActiveSec=1h
+Persistent=true
+AccuracySec=2min
+
+[Install]
+WantedBy=timers.target
