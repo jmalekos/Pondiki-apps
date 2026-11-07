@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-11-07T02:43:01.071787+00:00",
+  "generated_at": "2026-11-07T02:43:11.095743+00:00",
   "fields": {
     "btc_price": {
       "value": 75939.90625,
@@ -11,42 +11,42 @@
     "fear_greed": {
       "value": 25,
       "source": "alternative.me/fng",
-      "fetched_at": "2026-11-07T02:43:01.657645+00:00",
+      "fetched_at": "2026-11-07T02:43:11.689223+00:00",
       "ttl": 21600,
       "status": "ok"
     },
     "funding_8h": {
       "value": 3.026e-05,
       "source": "deribit:BTC-PERP",
-      "fetched_at": "2026-11-07T02:43:01.907587+00:00",
+      "fetched_at": "2026-11-07T02:43:11.930709+00:00",
       "ttl": 900,
       "status": "ok"
     },
     "funding_streak_days": {
       "value": 0,
       "source": "derived:funding_streak_days(deribit:BTC-PERP)",
-      "fetched_at": "2026-11-07T02:43:01.071787+00:00",
+      "fetched_at": "2026-11-07T02:43:11.095743+00:00",
       "ttl": 900,
       "status": "ok"
     },
     "vix": {
       "value": 28.18,
       "source": "FRED:VIXCLS",
-      "fetched_at": "2026-11-07T02:43:12.451986+00:00",
+      "fetched_at": "2026-11-07T02:43:22.292338+00:00",
       "ttl": 86400,
       "status": "ok"
     },
     "ust_10y": {
       "value": 4.84,
       "source": "FRED:DGS10",
-      "fetched_at": "2026-11-07T02:43:12.452018+00:00",
+      "fetched_at": "2026-11-07T02:43:22.292392+00:00",
       "ttl": 86400,
       "status": "ok"
     },
     "fed_funds": {
       "value": 3.88,
       "source": "FRED:FEDFUNDS",
-      "fetched_at": "2026-11-07T02:43:12.452027+00:00",
+      "fetched_at": "2026-11-07T02:43:22.292406+00:00",
       "ttl": 172800,
       "status": "ok"
     }
@@ -77,7 +77,7 @@
     },
     "is_valid": true,
     "pcr_interpretation": "Very bearish/hedged",
-    "_fetched_at": "2026-11-07T02:43:01.071787+00:00"
+    "_fetched_at": "2026-11-07T02:43:11.095743+00:00"
   },
   "macro": {
     "fed_funds": 3.88,
@@ -86,7 +86,7 @@
     "yield_curve": "10Y\u20112Y spread: 0.35% (normal)",
     "volatility_regime": "Elevated",
     "curve_signal": "Normal",
-    "_fetched_at": "2026-11-07T02:43:01.071787+00:00"
+    "_fetched_at": "2026-11-07T02:43:11.095743+00:00"
   },
   "regime": {
     "final_regime": "RANGE_BOUND",
