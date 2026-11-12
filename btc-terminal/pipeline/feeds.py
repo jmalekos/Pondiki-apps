@@ -27,7 +27,7 @@ def fetch_btc_price() -> Field:
     try:
         import yfinance as yf
         ticker = yf.Ticker("BTC-USD")
-        data = ticker.history(period="1d")
+        data = ticker.history(period="1d", interval="1m")
         if data.empty:
             return make_field(None, "yahoo:BTC-USD", TTL["btc_price"])
         

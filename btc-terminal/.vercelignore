@@ -1,0 +1,4 @@
+pipeline
+*.service
+*.timer
+publish.sh

@@ -1,20 +1,12 @@
 #!/usr/bin/env bash
-# Self-publish — runs ON the Pi, pushes snapshot.json to GitHub Pages.
-# GitHub Pages serves from `main` branch, path `/`.
+# Self-publish - runs ON the Pi, emits snapshot.json and deploys to Vercel.
+# Weekly timer + on-demand. No GitHub Pages, no git-push churn.
 set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-REPO_DIR="${SCRIPT_DIR}/.."   # btc-terminal/ -> repo root (Pondiki-apps)
 SNAPSHOT="${SCRIPT_DIR}/snapshot.json"
 
-# 1. Sync repo to origin/main first (clean base for the commit)
-echo "[publish] Syncing repo to origin/main..."
-cd "${REPO_DIR}"
-git fetch origin main
-git checkout main
-git reset --hard origin/main
-
-# 2. Generate fresh snapshot (run from btc-terminal/ so `pipeline` pkg resolves)
+# 1. Generate fresh snapshot
 echo "[publish] Running pipeline..."
 cd "${SCRIPT_DIR}"
 python -m pipeline.main --emit "${SNAPSHOT}" || {
@@ -22,16 +14,9 @@ python -m pipeline.main --emit "${SNAPSHOT}" || {
     exit 1
 }
 
-# 3. Commit + push snapshot.json to main
-cd "${REPO_DIR}"
-git add btc-terminal/snapshot.json
+# 2. Deploy static site to Vercel (index.html + snapshot.json)
+echo "[publish] Deploying to Vercel..."
+cd "${SCRIPT_DIR}"
+vercel --prod --yes
 
-if git diff --cached --quiet; then
-    echo "[publish] No change in snapshot — skipping commit"
-    exit 0
-fi
-
-git commit -m "snapshot: $(date -u +%FT%TZ)"
-git push origin main
-
-echo "[publish] ✓ Snapshot published"
+echo "[publish] OK Snapshot deployed to Vercel"
